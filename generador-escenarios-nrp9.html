@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Escenarios NRP 9.ª ed. · EDUVESA</title>
+<style>
+  :root{
+    --navy:#12385a;        /* NRP navy headings */
+    --navy-2:#0d2740;
+    --teal:#2f8a86;        /* NRP teal band */
+    --teal-dk:#236e6a;
+    --paper:#f6f7f6;
+    --card:#ffffff;
+    --ink:#1b2b36;
+    --muted:#5d6b74;
+    --line:#dfe4e6;
+    --crit:#c0392b;        /* HR<60 */
+    --warn:#c67a1e;        /* HR 60-99 */
+    --ok:#2e8b57;          /* HR>=100 */
+    --accent:#0f6fa8;
+    --shadow:0 1px 3px rgba(18,56,90,.08),0 8px 24px rgba(18,56,90,.06);
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px}
+
+  /* Header */
+  header.app{background:linear-gradient(180deg,var(--teal),var(--teal-dk));color:#fff;padding:22px 0 26px;border-bottom:5px solid var(--navy)}
+  header.app .wrap{padding-bottom:0}
+  .brandrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .mark{width:46px;height:46px;border-radius:10px;background:#fff;display:grid;place-items:center;flex:none}
+  .mark svg{width:30px;height:30px}
+  .brandrow h1{font-size:1.32rem;margin:0;letter-spacing:-.01em;font-weight:700}
+  .brandrow .sub{font-size:.82rem;opacity:.9;margin-top:2px;letter-spacing:.02em}
+  .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.68rem;font-weight:700;opacity:.85}
+
+  /* Layout */
+  .grid{display:grid;grid-template-columns:360px 1fr;gap:26px;margin-top:26px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+  /* Form panel */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:20px}
+  .panel h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--teal-dk);margin:0 0 14px;font-weight:800}
+  .field{margin-bottom:15px}
+  .field label{display:block;font-size:.8rem;font-weight:600;color:var(--navy);margin-bottom:5px}
+  .field .hint{font-size:.72rem;color:var(--muted);margin-top:3px}
+  .chkfield{display:flex;align-items:flex-start;gap:8px;font-size:.82rem;font-weight:600;color:var(--navy);cursor:pointer;line-height:1.35}
+  .chkfield input{margin-top:2px;accent-color:var(--teal);flex:none}
+  select,input[type=text]{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:.9rem;font-family:var(--sans);background:#fdfefe;color:var(--ink)}
+  select:focus,input:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+  .riskbox{border:1px solid var(--line);border-radius:9px;max-height:168px;overflow:auto;padding:6px 8px;background:#fdfefe}
+  .riskgrp{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin:8px 2px 4px}
+  .riskgrp:first-child{margin-top:2px}
+  .chk{display:flex;align-items:flex-start;gap:7px;padding:3px 2px;font-size:.8rem;cursor:pointer}
+  .chk input{margin-top:3px;flex:none;accent-color:var(--teal)}
+  .btnrow{display:flex;gap:10px;margin-top:6px}
+  button{font-family:var(--sans);cursor:pointer;border:none;border-radius:9px;font-weight:700;font-size:.88rem;padding:11px 14px;transition:transform .04s ease,filter .15s ease}
+  button:active{transform:translateY(1px)}
+  .btn-primary{background:var(--navy);color:#fff;flex:1}
+  .btn-primary:hover{filter:brightness(1.12)}
+  .btn-ghost{background:#eef3f3;color:var(--navy-2);border:1px solid var(--line)}
+  .btn-ghost:hover{background:#e4ecec}
+
+  /* Output */
+  #out{min-height:200px}
+  .empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:48px 28px;text-align:center;color:var(--muted)}
+  .empty svg{width:44px;height:44px;opacity:.35;margin-bottom:10px}
+  .empty h3{color:var(--navy);margin:0 0 6px;font-size:1.05rem}
+
+  .doc{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+  .doc-top{background:var(--navy);color:#fff;padding:18px 24px}
+  .doc-top .kicker{font-size:.68rem;text-transform:uppercase;letter-spacing:.16em;opacity:.8;font-weight:700}
+  .doc-top h2{margin:4px 0 2px;font-size:1.28rem;letter-spacing:-.01em}
+  .doc-top .meta{font-size:.82rem;opacity:.9}
+  .doc-body{padding:6px 24px 26px}
+
+  section.blk{border-top:1px solid var(--line);padding:18px 0 6px}
+  section.blk:first-child{border-top:none}
+  section.blk > h3{font-size:.74rem;text-transform:uppercase;letter-spacing:.11em;color:var(--teal-dk);font-weight:800;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  section.blk > h3 .n{background:var(--teal);color:#fff;width:20px;height:20px;border-radius:5px;display:inline-grid;place-items:center;font-size:.7rem;flex:none}
+  .blk p{margin:0 0 9px;font-size:.9rem}
+  .blk ul{margin:0 0 9px;padding-left:20px;font-size:.9rem}
+  .blk li{margin-bottom:4px}
+  .obj-tag{display:inline-block;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:1px 6px;border-radius:4px;margin-right:5px}
+  .t-cog{background:#e7f0f7;color:#1a5b8a}.t-tec{background:#e8f4ef;color:#1f7a52}.t-crm{background:#f6efe4;color:#9a6a12}
+
+  /* critical numbers */
+  .nums{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .num{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fbfdfd}
+  .num .k{font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+  .num .v{font-family:var(--mono);font-size:1.02rem;font-weight:700;color:var(--navy);margin-top:2px}
+  .num .v small{font-family:var(--sans);font-weight:600;color:var(--muted);font-size:.72rem}
+
+  /* trap callout */
+  .trap{border-left:4px solid var(--warn);background:#fdf7ee;border-radius:0 9px 9px 0;padding:11px 14px;margin:4px 0 10px}
+  .trap .lbl{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:#9a6a12;font-weight:800}
+  .trap p{margin:3px 0 0;font-size:.88rem}
+
+  /* state monitor cards */
+  .states{display:flex;flex-direction:column;gap:14px}
+  .state{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+  .state.alt{border-style:dashed;background:#fcfaf8}
+  .st-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:#f1f5f5;border-bottom:1px solid var(--line)}
+  .st-head .ph{font-weight:800;font-size:.86rem;color:var(--navy);letter-spacing:.01em}
+  .st-head .ph .step{display:inline-block;background:var(--navy);color:#fff;border-radius:5px;padding:1px 7px;font-size:.66rem;margin-right:8px;vertical-align:1px}
+  .st-head .clock{font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+  .state.alt .st-head{background:#faf3ec}
+  .state.alt .ph .step{background:var(--warn)}
+  .monitor{display:flex;gap:8px;padding:12px 14px;flex-wrap:wrap;background:#0e1c24}
+  .vs{flex:1;min-width:78px;background:#13252f;border-radius:8px;padding:8px 10px;border:1px solid #1e3540}
+  .vs .lab{font-size:.6rem;text-transform:uppercase;letter-spacing:.09em;color:#7fa2b0;font-weight:700}
+  .vs .val{font-family:var(--mono);font-size:1.28rem;font-weight:700;line-height:1.15;margin-top:1px}
+  .vs .val small{font-size:.62rem;font-weight:600;color:#8fb0bd}
+  .val.crit{color:#ff6b5e}.val.warn{color:#ffc14d}.val.ok{color:#57e08a}.val.neutral{color:#cfe6ef}
+  .st-body{padding:11px 14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:620px){.st-body{grid-template-columns:1fr}}
+  .st-body .cell .h{font-size:.64rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800;margin-bottom:3px}
+  .st-body .cell p{font-size:.84rem;margin:0}
+  .st-full{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:9px}
+  .trigger{font-size:.8rem;color:var(--accent);font-weight:600}
+
+  /* checklist */
+  .ck{list-style:none;padding:0;margin:0}
+  .ck li{display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-bottom:1px solid #eef2f2;font-size:.87rem}
+  .ck li:last-child{border-bottom:none}
+  .ck .box{width:16px;height:16px;border:1.5px solid var(--teal);border-radius:4px;flex:none;margin-top:2px}
+  .critflag{display:inline-block;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#fff;background:var(--crit);border-radius:4px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+
+  /* evaluation rubric */
+  .evalcard{border:2px solid var(--navy);border-radius:12px;margin-top:16px;overflow:hidden}
+  .eval-h{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .eval-h .t{font-weight:800;font-size:.92rem;letter-spacing:.01em}
+  .eval-h .sub{font-size:.72rem;opacity:.85}
+  .eval-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);background:#fbfdfd}
+  .eval-meta label{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:3px}
+  .eval-meta input{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-size:.85rem;font-family:var(--sans)}
+  .rubric{width:100%;border-collapse:collapse}
+  .rubric th{background:#f1f5f5;font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+  .rubric th.sc{text-align:center;width:74px}
+  .rubric td{padding:9px 10px;border-bottom:1px solid #eef2f2;font-size:.84rem;vertical-align:top}
+  .rubric td.sc{text-align:center}
+  .rubric tr.gate td{background:#fef7f5}
+  .rubric input[type=radio]{accent-color:var(--navy);width:16px;height:16px;cursor:pointer}
+  .rubric .item .cf{display:inline-block;font-size:.58rem;font-weight:800;text-transform:uppercase;color:#fff;background:var(--crit);border-radius:3px;padding:0 5px;margin-left:5px;letter-spacing:.03em}
+  .eval-extra{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 16px;border-top:1px solid var(--line);background:#fbfdfd}
+  @media(max-width:620px){.eval-extra{grid-template-columns:1fr}}
+  .eval-extra .fld label{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:4px}
+  .eval-extra select,.eval-extra input,.eval-extra textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-size:.84rem;font-family:var(--sans)}
+  .eval-extra textarea{min-height:56px;resize:vertical}
+  .score{display:flex;align-items:center;gap:16px;padding:16px;flex-wrap:wrap;border-top:2px solid var(--navy)}
+  .score .big{font-family:var(--mono);font-size:2rem;font-weight:800;color:var(--navy);line-height:1}
+  .score .big small{font-size:.9rem;color:var(--muted);font-weight:600}
+  .verdict{font-weight:800;font-size:.95rem;padding:7px 14px;border-radius:9px}
+  .verdict.ok{background:#e4f4ea;color:#1f7a4a;border:1px solid #b9e2c9}
+  .verdict.no{background:#fbe7e4;color:#b0392b;border:1px solid #f0c2ba}
+  .verdict.gatefail{background:#f6efe4;color:#9a6a12;border:1px solid #ecd9b3}
+  .score .note{font-size:.76rem;color:var(--muted);flex:1;min-width:180px}
+  .eval-tools{display:flex;gap:8px;padding:0 16px 16px;flex-wrap:wrap}
+  .cert-cta{background:var(--teal);color:#fff;border:none;border-radius:9px;font-weight:800;font-size:.82rem;padding:9px 14px;cursor:pointer;margin-left:auto}
+  .cert-cta:hover{filter:brightness(1.08)}
+
+  /* ===== Constancia (certificado) ===== */
+  #certView{position:fixed;inset:0;z-index:999;background:rgba(9,20,28,.72);display:flex;flex-direction:column;align-items:center;padding:24px 16px;overflow:auto}
+  .cert-actions{display:flex;gap:10px;margin-bottom:16px}
+  .cert-actions button{border:none;border-radius:9px;font-weight:700;font-size:.86rem;padding:10px 16px;cursor:pointer}
+  .cert-actions .p{background:var(--navy);color:#fff}
+  .cert-actions .p2{background:var(--teal);color:#fff}
+  .cert-actions .c{background:#e7edee;color:var(--navy-2)}
+  .cert-hint{width:min(920px,100%);margin:-6px auto 14px;font-size:.76rem;color:#eaf0f2;background:rgba(18,56,90,.6);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:10px 14px;line-height:1.5}
+  .cert-hint b{color:#fff}
+  .cert{width:min(920px,100%);background:#fff;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.4);position:relative;overflow:hidden}
+  .cert-frame{margin:14px;border:2px solid var(--teal);border-radius:6px;padding:40px 46px 34px;position:relative}
+  .cert-frame::before{content:"";position:absolute;inset:6px;border:1px solid #cfe0df;border-radius:4px;pointer-events:none}
+  .cert-band{height:8px;background:linear-gradient(90deg,var(--teal),var(--navy))}
+  .cert-brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:6px}
+  .cert-brand .m{width:40px;height:40px;border-radius:9px;background:var(--teal);display:grid;place-items:center}
+  .cert-brand .m svg{width:26px;height:26px}
+  .cert-brand .bt{text-align:left}
+  .cert-brand .bt .b1{font-weight:800;color:var(--navy);font-size:1.02rem;letter-spacing:.01em;line-height:1.1}
+  .cert-brand .bt .b2{font-size:.66rem;text-transform:uppercase;letter-spacing:.14em;color:var(--teal-dk);font-weight:700}
+  .cert h1{text-align:center;font-size:1.5rem;color:var(--navy);margin:16px 0 2px;letter-spacing:.01em}
+  .cert .kick{text-align:center;font-size:.7rem;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);font-weight:700}
+  .cert .lead{text-align:center;color:var(--ink);font-size:.9rem;margin:16px 0 6px}
+  .cert .name{text-align:center;font-size:1.6rem;font-weight:800;color:var(--teal-dk);margin:6px 0;border-bottom:1.5px solid var(--line);padding-bottom:8px;display:inline-block;min-width:60%}
+  .cert .namewrap{text-align:center}
+  .cert .body{text-align:center;color:var(--ink);font-size:.92rem;line-height:1.6;max-width:640px;margin:14px auto 0}
+  .cert .body b{color:var(--navy)}
+  .cert .scorebadge{display:inline-block;background:#e4f4ea;color:#1f7a4a;border:1px solid #b9e2c9;border-radius:20px;padding:3px 14px;font-weight:800;font-size:.92rem;margin:2px 0}
+  .cert-sign{display:flex;justify-content:space-between;gap:24px;margin-top:34px;flex-wrap:wrap}
+  .cert-sign .sig{flex:1;min-width:180px;text-align:center}
+  .cert-sign .line{border-top:1.4px solid var(--ink);margin:0 10px 5px;padding-top:5px}
+  .cert-sign .who{font-size:.82rem;font-weight:700;color:var(--navy)}
+  .cert-sign .role{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .cert-foot{display:flex;justify-content:space-between;align-items:center;margin-top:26px;font-size:.66rem;color:var(--muted);flex-wrap:wrap;gap:6px}
+  .cert-bottom{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:26px;flex-wrap:wrap}
+  .cert-verify{display:flex;align-items:center;gap:12px}
+  .cert-verify .qr{border:1px solid var(--line);border-radius:8px;padding:5px;background:#fff;line-height:0}
+  .cert-verify .qr svg{display:block}
+  .cert-verify .vtxt{font-size:.66rem;color:var(--muted);line-height:1.4}
+  .cert-verify .vtxt b{color:var(--navy);font-size:.72rem}
+  .cert-seal{width:92px;height:92px;border-radius:50%;border:2px solid var(--teal);color:var(--teal-dk);display:grid;place-items:center;text-align:center;font-size:.54rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;transform:rotate(-8deg);opacity:.92;line-height:1.25;background:radial-gradient(circle,#f3faf9,#eaf5f4);flex:none}
+
+  /* ===== Live simulation monitor ===== */
+  .sim{margin-top:16px;border:2px solid #0e1c24;border-radius:14px;overflow:hidden;background:#0b171e}
+  .sim-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#0e1c24;border-bottom:1px solid #1e3540;flex-wrap:wrap}
+  .sim-top .lbl{color:#8fb0bd;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;font-weight:800}
+  .sim-top .algo{color:#cfe6ef;font-size:.82rem;font-weight:600}
+  .sim-top .x{background:#1e3540;color:#cfe6ef;border-radius:7px;padding:5px 10px;font-size:.78rem;cursor:pointer;border:none}
+  .sim-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:0}
+  @media(max-width:720px){.sim-grid{grid-template-columns:1fr}}
+  .scope{position:relative;background:#06121a;border-right:1px solid #14262f}
+  @media(max-width:720px){.scope{border-right:none;border-bottom:1px solid #14262f}}
+  .scope canvas{display:block;width:100%;height:190px}
+  .scope .clk{position:absolute;top:10px;left:14px;font-family:var(--mono);font-size:1.5rem;font-weight:700;color:#cfe6ef;letter-spacing:.02em}
+  .scope .clk small{font-size:.6rem;color:#6f93a1;display:block;letter-spacing:.1em;text-transform:uppercase}
+  .scope .phase{position:absolute;bottom:10px;left:14px;right:14px;font-size:.78rem;color:#9fc0cd;font-weight:600}
+  .vitals{display:grid;grid-template-rows:auto auto auto;gap:0}
+  .vrow{padding:12px 16px;border-bottom:1px solid #14262f;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .vrow:last-child{border-bottom:none}
+  .vrow .vl{font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+  .vrow .vl.hr{color:#57e08a}.vrow .vl.spo2{color:#7fd0ff}.vrow .vl.etc{color:#c9a2ff}
+  .vrow .vv{font-family:var(--mono);font-size:2.4rem;font-weight:800;line-height:1}
+  .vrow .vv small{font-size:.9rem;font-weight:600}
+  .vrow.small .vv{font-size:1rem;font-weight:600;text-align:right;max-width:60%}
+  .vv.crit{color:#ff6b5e}.vv.warn{color:#ffc14d}.vv.ok{color:#57e08a}.vv.spo2c{color:#7fd0ff}.vv.neutral{color:#cfe6ef}
+  .metachip{font-size:.6rem;background:#14262f;color:#8fb0bd;border-radius:20px;padding:2px 8px;font-family:var(--sans);font-weight:700;margin-left:6px;vertical-align:3px}
+  .sim-ctrl{display:flex;align-items:center;gap:8px;padding:12px 14px;background:#0e1c24;border-top:1px solid #1e3540;flex-wrap:wrap}
+  .sim-ctrl button{border:none;border-radius:8px;font-weight:700;font-size:.82rem;padding:8px 12px;cursor:pointer}
+  .sc-play{background:#2e8b57;color:#fff}.sc-pause{background:#c67a1e;color:#fff}
+  .sc-nav{background:#1e3540;color:#cfe6ef}.sc-nav:disabled{opacity:.4;cursor:not-allowed}
+  .sc-reset{background:#3a2020;color:#ff9c8f}
+  .sim-ctrl .pos{color:#8fb0bd;font-size:.76rem;font-family:var(--mono);margin:0 4px}
+  .sim-ctrl .auto{color:#9fc0cd;font-size:.74rem;display:flex;align-items:center;gap:5px;margin-left:auto}
+  .sim-ctrl .auto input{accent-color:#2e8b57}
+  .sim-action{padding:11px 16px;background:#0b171e;border-top:1px solid #14262f}
+  .sim-action .h{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:#6f93a1;font-weight:800}
+  .sim-action .a{color:#cfe6ef;font-size:.86rem;margin-top:3px}
+  .sim-action .trg{color:#7fd0ff;font-size:.8rem;margin-top:5px;font-weight:600}
+  .m2-ctrl{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0e1c24;border-top:1px solid #1e3540;flex-wrap:wrap}
+  .m2-ctrl .m2-lbl{color:#8fb0bd;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+  .m2-ctrl select{background:#13252f;color:#cfe6ef;border:1px solid #1e3540;border-radius:7px;padding:6px 9px;font-size:.8rem;font-family:var(--sans)}
+  .m2-ctrl .m2-delta{display:inline-flex;align-items:center;gap:7px;color:#9fc0cd;font-size:.76rem}
+  .m2-ctrl .m2-delta b{color:#7fd0ff}
+  .m2-ctrl input[type=range]{accent-color:#7fd0ff}
+  .m2-grid{border-top:1px solid #14262f}
+  .m2-grid .scope canvas{height:150px}
+  .scope .clk2{position:absolute;top:10px;left:14px;font-size:.72rem;color:#9fc0cd;font-weight:700}
+  .m2-banner{padding:9px 14px;font-size:.8rem;font-weight:700;text-align:center;border-top:1px solid #14262f}
+  .m2-banner.crit{background:#3a1714;color:#ff9c8f}
+  .m2-banner.warn{background:#3a2f14;color:#ffd98a}
+  .m2-banner.ok{background:#123322;color:#8fe3b0}
+  /* metrónomos */
+  .mets{display:grid;grid-template-columns:1fr 1fr;gap:0;background:#0b171e;border-top:1px solid #14262f}
+  @media(max-width:620px){.mets{grid-template-columns:1fr}}
+  .met{padding:12px 14px;border-right:1px solid #14262f}
+  .met:last-child{border-right:none}
+  .met.req{background:#1b1410;box-shadow:inset 3px 0 0 #c67a1e}
+  .met .mh{font-size:.74rem;font-weight:800;color:#cfe6ef;margin-bottom:8px}
+  .met .mrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .met .mbtn{background:#2e8b57;color:#fff;border:none;border-radius:8px;width:38px;height:38px;font-size:1rem;cursor:pointer;flex:none}
+  .met .mbtn.on{background:#c67a1e}
+  .met .mrate{color:#9fc0cd;font-size:.76rem}
+  .met .mrate b{color:#7fd0ff}
+  .met input[type=range]{accent-color:#57e08a;flex:1;min-width:80px}
+  .met .mbeat{font-family:var(--mono);font-weight:800;font-size:1rem;color:#57e08a;min-width:62px;text-align:center;background:#13252f;border:1px solid #1e3540;border-radius:7px;padding:6px 4px}
+  .met .mbeat.flash{animation:metflash .18s ease}
+  @keyframes metflash{0%{background:#2e8b57;color:#fff;transform:scale(1.08)}100%{background:#13252f;color:#57e08a;transform:scale(1)}}
+  .met .mhint{font-size:.68rem;color:#6f93a1;margin-top:7px}
+
+  /* debrief */
+  .gas{display:flex;flex-direction:column;gap:12px}
+  .gphase{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .gphase .gh{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin:0 0 7px;display:flex;align-items:center;gap:8px}
+  .gphase .gh .pill{background:var(--teal);color:#fff;border-radius:20px;padding:2px 9px;font-size:.62rem;letter-spacing:.05em}
+  .gphase.analyze .gh .pill{background:var(--accent)}
+  .gphase.summ .gh .pill{background:var(--ok)}
+  .ai-q{font-style:italic;color:var(--navy-2)}
+  .ai-q b{font-style:normal;color:var(--teal-dk)}
+
+  .refs{font-size:.78rem;color:var(--muted)}
+  .refs li{margin-bottom:3px}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;padding:14px 24px;background:#f1f5f5;border-top:1px solid var(--line)}
+  .toolbar .spacer{flex:1}
+  .ai-note{font-size:.72rem;color:var(--muted);padding:0 24px 14px}
+  .ai-block{margin-top:10px;border-left:3px solid var(--accent);background:#f2f8fc;border-radius:0 8px 8px 0;padding:11px 14px;font-size:.86rem;white-space:pre-wrap}
+  .ai-block .aih{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:800;margin-bottom:5px}
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  footer.app{text-align:center;color:var(--muted);font-size:.74rem;margin-top:34px}
+
+  /* Print */
+  @media print{
+    header.app,.panel,.toolbar,.ai-note,.eval-tools,footer.app{display:none!important}
+    /* Cuando la constancia está abierta, imprimir SOLO la constancia */
+    body.cert-open .wrap,body.cert-open header.app{display:none!important}
+    body.cert-open #certView{position:static;inset:auto;background:#fff;padding:0;display:block}
+    body.cert-open .cert-actions{display:none!important}
+    body.cert-open .cert{box-shadow:none;width:100%;border-radius:0}
+    .evalcard{break-inside:avoid}
+    body{background:#fff}
+    .grid{display:block;margin:0}
+    .doc{box-shadow:none;border:none}
+    .monitor{background:#0e1c24!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .doc-top,.st-head,.obj-tag,.trap,.ai-block{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    section.blk,.state{break-inside:avoid}
+    .wrap{padding:0}
+  }
+</style>
+</head>
+<body>
+<header class="app">
+  <div class="wrap">
+    <div class="brandrow">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2f8a86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12h3l2-5 3 10 2-7 2 4h6"/>
+        </svg>
+      </div>
+      <div>
+        <div class="eyebrow">EDUVESA · Resuscitation Solutions</div>
+        <h1>Generador de Escenarios de Simulación Neonatal</h1>
+        <div class="sub">Calibrado con el Instructor Toolkit NRP 9.ª edición (AAP/AHA) · Formato de estados AHA/Laerdal · Debriefing PEARLS/GAS</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <!-- ===== FORM ===== -->
+    <form class="panel" id="form" onsubmit="return false;">
+      <h2>Variables de entrada</h2>
+
+      <div class="field">
+        <label for="sexo">Sexo del recién nacido</label>
+        <select id="sexo">
+          <option>Masculino</option>
+          <option>Femenino</option>
+          <option>Indeterminado (ambiguo)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="ga">Edad gestacional</label>
+        <select id="ga"></select>
+        <div class="hint" id="pesoHint"></div>
+      </div>
+
+      <div class="field">
+        <label for="fluido">Líquido amniótico</label>
+        <select id="fluido">
+          <option value="claro">Claro</option>
+          <option value="meconial-fluido">Meconial fluido</option>
+          <option value="meconial-espeso">Meconial espeso</option>
+          <option value="tenido">Teñido / sanguinolento</option>
+          <option value="oligo">Oligohidramnios</option>
+          <option value="poli">Polihidramnios</option>
+        </select>
+        <div class="hint">Meconio sólo en término / postérmino (Scenario Builder).</div>
+      </div>
+
+      <div class="field">
+        <label>Categoría del problema del RN</label>
+        <select id="categoria" onchange="poblarProblemas()">
+          <option value="general">General / rutina</option>
+          <option value="respiratorio">Respiratorio</option>
+          <option value="genetico">Genético / dismórfico</option>
+          <option value="cardiaco">Cardiaco</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="problema">Problema específico</label>
+        <select id="problema"></select>
+        <div class="hint">Déjalo en "Sugerir automáticamente" y el motor elige uno coherente con la GA.</div>
+      </div>
+
+      <div class="field">
+        <label>Antecedentes maternos / factores de riesgo</label>
+        <div class="riskbox" id="riskbox"></div>
+        <div class="hint">Elige 1–2 (aumentan en complejidad por lección, según el Scenario Builder).</div>
+      </div>
+
+      <div class="field">
+        <label for="nivel">Nivel del participante</label>
+        <select id="nivel">
+          <option value="basico">Básico (Essentials)</option>
+          <option value="intermedio">Intermedio</option>
+          <option value="avanzado" selected>Avanzado (Advanced)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="parto">Vía de nacimiento</label>
+        <select id="parto">
+          <option>Parto vaginal</option>
+          <option>Cesárea</option>
+          <option>Cesárea de urgencia con anestesia general</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="chkfield"><input type="checkbox" id="postnatal"> Escenario postnatal / fuera de sala de partos (Lección 10)</label>
+        <div class="hint">Ajusta el briefing, la preparación, los tiempos y la evaluación inicial para un lactante que se deteriora fuera del nacimiento.</div>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn-primary" type="button" onclick="generar()">Generar escenario</button>
+        <button class="btn-ghost" type="button" onclick="aleatorio()" title="Randomizar entradas">🎲</button>
+      </div>
+    </form>
+
+    <!-- ===== OUTPUT ===== -->
+    <div id="out">
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+        <h3>Configura las variables y genera el escenario</h3>
+        <p>Todos los valores clínicos (peso por GA, FiO₂ inicial, PIP/PEEP, TET, SpO₂ meta, dosis de adrenalina y volumen) se calculan a partir de las tablas reales del Toolkit NRP 9.ª ed.</p>
+      </div>
+    </div>
+  </div>
+  <footer class="app">Herramienta educativa para centros de entrenamiento AHA. No sustituye el <em>Textbook of Neonatal Resuscitation, 9.ª ed.</em> ni el juicio clínico. © EDUVESA S.C.</footer>
+</div>
+
+<script>
+/* ============================================================
+   DATOS NRP 9.ª ed. (extraídos del Instructor Toolkit subido)
+   ============================================================ */
+
+// Peso aproximado por edad gestacional (Scenario Builder, p.1)
+const GA_BANDS = [
+  {min:23,max:24,peso:"500–600 g",kg:0.55},
+  {min:25,max:26,peso:"700–800 g",kg:0.75},
+  {min:27,max:29,peso:"900–1000 g",kg:0.95},
+  {min:30,max:32,peso:"1100–1400 g",kg:1.25},
+  {min:33,max:34,peso:"1500–1800 g",kg:1.65},
+  {min:35,max:37,peso:"1900–2400 g",kg:2.15},
+  {min:38,max:40,peso:"2500–3100 g",kg:2.8},
+  {min:41,max:43,peso:"3200–4200 g",kg:3.7},
+];
+
+// Tabla de SpO2 preductal meta — 9.ª ed. inicia a los 2 min
+const SPO2_META = [
+  {min:2,r:"65–70%"},{min:3,r:"70–75%"},{min:4,r:"75–80%"},
+  {min:5,r:"80–85%"},{min:10,r:"85–95%"}
+];
+function metaSpo2(min){
+  let best=SPO2_META[0];
+  for(const row of SPO2_META){ if(min>=row.min) best=row; }
+  return best.r;
+}
+
+// FiO2 inicial por GA (9.ª ed.)
+function fio2Inicial(ga){
+  if(ga>=35) return "21%";
+  if(ga>=32) return "21–30%";
+  return "≥30%";
+}
+// PIP inicial (sugerido 25 cmH2O; rango por GA) + PEEP
+function pipRango(ga){ return ga>=32 ? "25 cmH₂O (rango 25–30)" : "25 cmH₂O (rango 20–25)"; }
+function presionMax(ga){ return ga>=37 ? "40 cmH₂O" : (ga<32? "30 cmH₂O":"40 cmH₂O (30 si <32 sem)"); }
+
+// Tamaño de TET (9.ª ed.) por peso/GA
+function tet(kg,ga){
+  if(kg<0.8) return {tubo:"2,5 mm (2,0 opcional)",hoja:"0 (00 opcional)"};
+  if(kg<=1.2) return {tubo:"2,5 mm",hoja:"0"};
+  if(kg<=2.2) return {tubo:"3,0 mm",hoja:ga<34?"0":"0–1"};
+  return {tubo:"3,5 mm",hoja:"1"};
+}
+
+// Dosis calculadas (adrenalina 0,1 mg/mL)
+function dosis(kg){
+  const ivMg=(0.02*kg), ivMl=(0.2*kg);
+  const etMg=(0.1*kg),  etMl=(1.0*kg);
+  const vol =(10*kg);
+  const f=n=>Math.round(n*100)/100;
+  return {
+    ivMg:f(ivMg), ivMl:f(ivMl),
+    etMg:f(etMg), etMl:f(etMl),
+    vol:Math.round(vol)
+  };
+}
+
+// Factores de riesgo por lección/complejidad (Scenario Builder, p.2)
+const RIESGOS = {
+  "Lección 3 · Pasos iniciales":[
+    "Hipertensión materna","Sin control prenatal","Edad gestacional < 36 0/7 sem"
+  ],
+  "Lección 4 · Ventilación":[
+    "Preeclampsia","Terapia materna con sulfato de magnesio","Restricción del crecimiento intrauterino (RCIU)","Líquido meconial"
+  ],
+  "Lección 5 · Intubación":[
+    "Patrón categoría III de FCF","Madre febril, feto taquicárdico","Presentación pélvica u otra anormal"
+  ],
+  "Lección 6 · Compresiones":[
+    "Convulsiones maternas (eclampsia)","Extracción por vacío fallida","Bradicardia fetal"
+  ],
+  "Lección 7 · Medicación / volumen":[
+    "Cesárea de urgencia + anestesia general","Cordón prolapsado o circular apretado","Sangrado vaginal abundante","Hemorragia fetomaterna","Vasa previa sangrante","Desprendimiento / laceración placentaria"
+  ]
+};
+
+/* ============================================================
+   BANCO DE PROBLEMAS (fisiopatología + trampa + vía del algoritmo)
+   endpoint: pasosIniciales | cpap | vpp | mrsopa | obstruido |
+             intubacion | compresiones | medicacion | reconoceCC
+   ============================================================ */
+const PROBLEMAS = {
+  general:[
+    {id:"auto",label:"— Sugerir automáticamente —"},
+    {id:"termino_normal",label:"RN de término sin problemas aparentes",endpoint:"rutina",gaMin:37,gaMax:41,
+      fisio:"Recién nacido de término vigoroso: llora, buen tono y respiración espontánea; transición cardiopulmonar normal.",
+      trampa:"El reto es NO sobre-intervenir: permanece piel con piel con la madre, pasos iniciales con ella y evaluación continua; evitar succión de rutina y separación innecesaria.",
+      obj:["Reconocer al RN vigoroso que permanece con su madre","Realizar los pasos iniciales con la madre (calor, secado, posición)","Evitar intervenciones innecesarias y favorecer el contacto piel con piel"]},
+    {id:"bajo_peso",label:"RN de bajo peso (pequeño para la edad gestacional)",endpoint:"rutina",gaMin:35,gaMax:41,
+      fisio:"RN de bajo peso/PEG: mayor relación superficie-masa con riesgo de hipotermia e hipoglucemia; suele estar vigoroso pero requiere vigilancia estrecha.",
+      trampa:"Reforzar la termorregulación y vigilar la glucemia con alimentación temprana; no confundir el bajo peso con una indicación automática de reanimación.",
+      obj:["Aplicar estrategias de termorregulación en el RN de bajo peso","Vigilar signos de hipoglucemia e iniciar alimentación temprana","Distinguir bajo peso de indicación de reanimación"]},
+    {id:"hipertrofico",label:"RN hipertrófico / macrosómico (hijo de madre diabética)",endpoint:"rutina",gaMin:37,gaMax:42,
+      fisio:"RN grande para la edad gestacional/macrosómico: riesgo de distocia de hombros, trauma al nacimiento (clavícula, plexo braquial) e hipoglucemia por hiperinsulinismo.",
+      trampa:"Anticipar distocia de hombros y lesión obstétrica, y vigilar hipoglucemia; tras un parto difícil puede requerir pasos iniciales y, ocasionalmente, escalar a VPP.",
+      obj:["Anticipar distocia de hombros y trauma obstétrico","Vigilar hipoglucemia en el hijo de madre diabética","Estar preparado para escalar a VPP si el parto fue traumático"]}
+  ],
+  respiratorio:[
+    {id:"auto",label:"— Sugerir automáticamente —"},
+    {id:"ttn",label:"Taquipnea transitoria del RN",endpoint:"cpap",gaMin:34,
+      fisio:"Retraso en la reabsorción del líquido pulmonar fetal; distrés leve con taquipnea, quejido y retracciones que resuelve en horas.",
+      trampa:"El RN respira y tiene FC >100; la tentación es intubar. La respuesta correcta es CPAP y O₂ titulado a la SpO₂ meta, no VPP.",
+      obj:["Reconocer distrés respiratorio que amerita CPAP, no VPP","Iniciar CPAP a 5 cmH₂O y titular O₂ por SpO₂","Colocar sonda orogástrica si continúa CPAP"]},
+    {id:"sdr",label:"SDR / déficit de surfactante",endpoint:"vpp",gaMin:24,gaMax:34,
+      fisio:"Déficit de surfactante en el pretérmino: colapso alveolar, baja distensibilidad, quejido, retracciones e hipoxemia progresiva.",
+      trampa:"Pretérmino: no sobreoxigenar. FiO₂ inicial ≥30% (<32 sem) y titular a la SpO₂ meta, más termorregulación con bolsa de polietileno.",
+      obj:["Aplicar estrategias de termorregulación del pretérmino","Iniciar VPP/CPAP con FiO₂ apropiada por GA","Considerar surfactante y traslado a UCIN"]},
+    {id:"meconio",label:"Aspiración de meconio / vía aérea obstruida",endpoint:"obstruido",gaMin:37,fluido:true,
+      fisio:"RN no vigoroso con meconio espeso: obstrucción de la vía aérea que impide movimiento torácico pese a VPP y presión máxima.",
+      trampa:"Sin movimiento torácico tras intubar y llegar a presión máxima → sospechar obstrucción y aspirar la tráquea con aspirador de meconio, no seguir subiendo presión.",
+      obj:["Reconocer la vía aérea obstruida","Usar aspirador traqueal para despejar la tráquea","Reanudar VPP efectiva tras la aspiración"]},
+    {id:"neumotorax",label:"Neumotórax a tensión",endpoint:"compresiones",gaMin:34,
+      fisio:"Escape aéreo con colapso pulmonar: ruidos respiratorios asimétricos, deterioro súbito y FC que no mejora pese a VPP que mueve el tórax.",
+      trampa:"Si la FC persiste <60 con VPP efectiva y compresiones, considerar neumotórax (transiluminación) e hipovolemia antes de repetir ciclos ciegamente.",
+      obj:["Interpretar deterioro pese a ventilación efectiva","Considerar neumotórax/hipovolemia en FC persistentemente baja","Coordinar CRM en el evento crítico"]},
+    {id:"hipoplasia",label:"Hipoplasia pulmonar (oligohidramnios)",endpoint:"intubacion",gaMin:34,
+      fisio:"Pulmones hipoplásicos (secuencia de oligohidramnios): muy baja distensibilidad, requiere presiones altas y responde de forma limitada.",
+      trampa:"Baja distensibilidad no es sinónimo de mala técnica: verificar sello y posición antes de escalar; el pronóstico depende del grado de hipoplasia.",
+      obj:["Optimizar VPP y considerar vía aérea alterna","Reconocer limitación fisiológica de la respuesta","Comunicar plan de cuidados con la familia"]}
+  ],
+  genetico:[
+    {id:"auto",label:"— Sugerir automáticamente —"},
+    {id:"coanas",label:"Atresia de coanas bilateral",endpoint:"pasosIniciales",gaMin:36,
+      fisio:"Obstrucción nasal ósea/membranosa: el RN es respirador nasal obligado → cianosis en reposo que mejora al llorar (boca abierta).",
+      trampa:"Rosado al llorar, azul en reposo: la clave no es más O₂ sino permeabilizar la vía oral (cánula orofaríngea/estimular llanto).",
+      obj:["Reconocer patrón cianosis-en-reposo/rosado-al-llorar","Establecer vía aérea oral","Anticipar valoración por otorrinolaringología"]},
+    {id:"cdh",label:"Hernia diafragmática congénita",endpoint:"intubacion",gaMin:34,
+      fisio:"Vísceras abdominales en el tórax: abdomen excavado, ruidos intestinales torácicos, hipoplasia pulmonar y dificultad respiratoria grave.",
+      trampa:"Evitar VPP con bolsa-mascarilla (distiende el intestino y empeora): intubar precozmente y colocar sonda orogástrica a descompresión.",
+      obj:["Reconocer signos de HDC (abdomen escafoides)","Intubar y colocar SOG evitando ventilación con mascarilla prolongada","Coordinar traslado a centro quirúrgico"]},
+    {id:"pierrerobin",label:"Secuencia de Pierre Robin",endpoint:"mrsopa",gaMin:34,
+      fisio:"Micrognatia + glosoptosis + hendidura palatina: obstrucción de vía aérea alta por caída de la lengua.",
+      trampa:"La VPP con mascarilla puede fallar por la anatomía: posición prona/lateral, cánula nasofaríngea o mascarilla laríngea como rescate.",
+      obj:["Reconocer vía aérea difícil por micrognatia","Aplicar maniobras posicionales y considerar mascarilla laríngea","Priorizar los pasos MR SOPA más útiles"]},
+    {id:"higroma",label:"Higroma quístico / masa cervical",endpoint:"intubacion",gaMin:34,
+      fisio:"Masa cervical que distorsiona y comprime la vía aérea: intubación difícil anticipada, posible necesidad de vía aérea avanzada.",
+      trampa:"Anticipar la vía aérea difícil desde el briefing: equipo y experto disponibles antes del nacimiento (estrategia tipo EXIT si aplica).",
+      obj:["Anticipar y planear la vía aérea difícil","Coordinar personal experto y equipo alterno","Aplicar habilidades conductuales clave del NRP"]},
+    {id:"higroma_turner",label:"Higroma quístico con obstrucción mecánica (síndrome de Turner)",endpoint:"intubacion",gaMin:36,
+      fisio:"RN de término con masa cística cervical que comprime la tráquea, polihidramnios y síndrome de Turner: obstrucción mecánica de la vía aérea al nacer; considerar coartación de aorta y anomalías renales asociadas (Laerdal Scenario Cloud, act. 2020).",
+      trampa:"La ventilación con mascarilla falla por compresión mecánica: tras los pasos correctivos MR SOPA, reconocer la obstrucción mecánica y colocar una vía aérea alterna (mascarilla laríngea o TET). Anticipar la vía aérea difícil en el briefing y vigilar signos de coartación (Turner).",
+      obj:["Realizar un briefing pre-reanimación exhaustivo y delegar tareas","Aplicar MR SOPA y reconocer la obstrucción mecánica de la vía aérea","Colocar vía aérea alterna; considerar coartación/anomalías renales (Turner)"]},
+    {id:"trisomia",label:"Sospecha de trisomía con hipotonía",endpoint:"vpp",gaMin:34,
+      fisio:"Rasgos dismórficos e hipotonía marcada; posible cardiopatía asociada. Pobre esfuerzo respiratorio al nacer.",
+      trampa:"No asumir mal pronóstico: reanimar según algoritmo y hallazgos; la hipotonía justifica pasos iniciales y VPP si apnea/FC<100.",
+      obj:["Reanimar según el algoritmo pese a rasgos dismórficos","Reconocer hipotonía que requiere VPP","Comunicar hallazgos con sensibilidad a la familia"]},
+    {id:"mmc",label:"Mielomeningocele (defecto del tubo neural) · Lección 10",endpoint:"defecto",gaMin:34,
+      fisio:"Defecto abierto del tubo neural con saco neural expuesto en la línea media dorsal: riesgo de infección, pérdida de calor y lesión del tejido neural; suele estar vigoroso al nacer.",
+      trampa:"La clave es la protección: decúbito prono/lateral, apósito estéril húmedo (SSN 0.9%) sobre el saco, precauciones libres de látex y termorregulación; evitar presión y ruptura del saco. La reanimación sigue el algoritmo estándar si se requiere.",
+      obj:["Reconocer el mielomeningocele y sus riesgos (infección, hipotermia)","Proteger el saco (posición prona/lateral, apósito estéril húmedo, libre de látex)","Coordinar traslado a neurocirugía y mantener termorregulación"]},
+    {id:"gastrosquisis",label:"Gastrosquisis (asas intestinales expuestas) · Lección 10",endpoint:"defecto",gaMin:34,
+      fisio:"Defecto de la pared abdominal a la derecha del ombligo SIN saco, con asas intestinales expuestas: gran pérdida de calor y líquidos y riesgo de isquemia por acodamiento del mesenterio.",
+      trampa:"Envolver las asas en bolsa intestinal estéril/plástico, posición en decúbito lateral derecho para preservar la perfusión, sonda orogástrica a descompresión, reposición de líquidos IV y termorregulación estricta.",
+      obj:["Reconocer la gastrosquisis y su riesgo de pérdida térmica/hídrica","Proteger las asas (bolsa estéril, posición, evitar acodamiento del mesenterio)","Descomprimir con SOG, reponer líquidos IV y coordinar traslado quirúrgico"]},
+    {id:"onfalocele",label:"Onfalocele (defecto con saco en el ombligo) · Lección 10",endpoint:"defecto",gaMin:34,
+      fisio:"Herniación de vísceras abdominales cubiertas por un saco en la base del cordón: frecuente asociación con anomalías cardiacas, cromosómicas y síndrome de Beckwith-Wiedemann (hipoglucemia).",
+      trampa:"Proteger el saco íntegro (apósito estéril/plástico) sin romperlo, sonda orogástrica a descompresión, y VIGILAR anomalías asociadas (cardiopatía ductus-dependiente) e hipoglucemia.",
+      obj:["Reconocer el onfalocele y sus anomalías asociadas","Proteger el saco íntegro y descomprimir el estómago (SOG)","Vigilar hipoglucemia y cardiopatía; coordinar traslado"]},
+    {id:"microtia",label:"Microtia (posible vía aérea difícil asociada) · Lección 10",endpoint:"defecto",gaMin:34,
+      fisio:"Hipoplasia o ausencia del pabellón auricular: puede formar parte de un espectro craneofacial (microsomía hemifacial/Goldenhar) con posible micrognatia y vía aérea difícil.",
+      trampa:"La microtia aislada rara vez requiere reanimación, pero obliga a examinar anomalías asociadas y ANTICIPAR una vía aérea difícil: preparar equipo de vía aérea alterna y personal experto si hay signos de compromiso.",
+      obj:["Reconocer la microtia como posible marcador de anomalías craneofaciales","Anticipar y preparar una vía aérea difícil (equipo y experto)","Examinar anomalías asociadas y coordinar valoración especializada"]}
+  ],
+  cardiaco:[
+    {id:"auto",label:"— Sugerir automáticamente —"},
+    {id:"ductus",label:"Cardiopatía ductus-dependiente (TGA / atresia pulmonar)",endpoint:"reconoceCC",gaMin:36,
+      fisio:"Mezcla inadecuada / flujo pulmonar dependiente del conducto: cianosis que NO mejora con O₂ pese a FC normal y ventilación efectiva.",
+      trampa:"La SpO₂ se estanca en 70–85% con buena FC y tórax que se mueve: reconocer cardiopatía, evitar hiperoxia, iniciar prostaglandina E1 y trasladar; escalar O₂ no la corrige.",
+      obj:["Diferenciar hipoxemia cardiaca de la respiratoria","Evitar hiperoxia y planear traslado / PGE1","Interpretar la saturación pre/postductal"]},
+    {id:"hipoplasico",label:"Síndrome de corazón izquierdo hipoplásico",endpoint:"reconoceCC",gaMin:36,
+      fisio:"Circulación sistémica dependiente del conducto: puede verse rosado al inicio y deteriorarse con perfusión sistémica pobre y pulsos débiles.",
+      trampa:"El exceso de O₂ cierra el conducto y empeora la perfusión sistémica: mantener SpO₂ en meta, no maximizar O₂; PGE1 y traslado urgente.",
+      obj:["Reconocer fisiología ductus-dependiente sistémica","Evitar hiperoxia; mantener SpO₂ en meta","Coordinar traslado a cardiología / cirugía"]},
+    {id:"hlhs_pge1",label:"SVIH no diagnosticado (3 días) — prostaglandina E1",endpoint:"reconoceCC",gaMin:36,
+      fisio:"Lactante de término de 3 días que se deteriora durante fototerapia por hiperbilirubinemia: síndrome de ventrículo izquierdo hipoplásico con cierre del conducto arterioso y colapso de la perfusión sistémica (reanimación fuera de la sala de partos, Lección 10; Laerdal Scenario Cloud v1.0).",
+      trampa:"La SpO₂ no mejora con O₂ y hay hipoperfusión/pulsos débiles pese a FC adecuada: reconocer cardiopatía ductus-dependiente, obtener acceso vascular e iniciar prostaglandina E1 (alprostadil) con traslado. Evitar hiperoxia (cierra el conducto) y VIGILAR APNEA como efecto de la prostaglandina; la intubación es opcional.",
+      obj:["Reconocer cardiopatía ductus-dependiente en el deterioro postnatal","Obtener acceso vascular e iniciar infusión de prostaglandina E1","Evitar hiperoxia y vigilar apnea por prostaglandina; coordinar traslado"]},
+    {id:"cianosis",label:"Cianosis persistente sin respuesta al O₂",endpoint:"reconoceCC",gaMin:36,
+      fisio:"Cianosis central que persiste pese a O₂ y ventilación efectiva, con FC adecuada: bandera roja de cardiopatía congénita cianógena.",
+      trampa:"No atribuir la cianosis a técnica de ventilación cuando el tórax se mueve y la FC es buena: pensar en corazón y valoración cardiológica.",
+      obj:["Reconocer la cianosis refractaria como bandera de CC","Confirmar ventilación efectiva antes de atribuir a pulmón","Solicitar valoración cardiológica y ecocardiograma"]},
+    {id:"hidrops",label:"Hidrops fetal",endpoint:"medicacion",gaMin:30,
+      fisio:"Acumulación de líquido en ≥2 compartimentos: derrames, edema, ventilación difícil, posible anemia grave y compromiso hemodinámico.",
+      trampa:"Reanimación compleja: puede requerir drenaje de derrames para ventilar, expansión de volumen (± PRBC) y todo el algoritmo avanzado.",
+      obj:["Anticipar reanimación avanzada del hidrops","Administrar volumen (± PRBC) por signos de choque","Coordinar equipo completo y drenajes si procede"]}
+  ]
+};
+
+/* ============================================================
+   INICIALIZACIÓN DE LA UI
+   ============================================================ */
+function initGA(){
+  const sel=document.getElementById("ga");
+  for(let w=23;w<=43;w++){
+    const o=document.createElement("option");
+    o.value=w; o.textContent=w+" semanas";
+    if(w===38) o.selected=true;
+    sel.appendChild(o);
+  }
+  sel.addEventListener("change",actualizarPesoHint);
+  actualizarPesoHint();
+}
+function bandFor(ga){ return GA_BANDS.find(b=>ga>=b.min&&ga<=b.max)||GA_BANDS[GA_BANDS.length-1]; }
+function actualizarPesoHint(){
+  const ga=+document.getElementById("ga").value;
+  const b=bandFor(ga);
+  document.getElementById("pesoHint").textContent="Peso estimado: "+b.peso+" · TET "+tet(b.kg,ga).tubo+" · FiO₂ inicial "+fio2Inicial(ga);
+}
+function poblarProblemas(){
+  const cat=document.getElementById("categoria").value;
+  const sel=document.getElementById("problema");
+  sel.innerHTML="";
+  PROBLEMAS[cat].forEach(p=>{
+    const o=document.createElement("option");
+    o.value=p.id; o.textContent=p.label; sel.appendChild(o);
+  });
+}
+function initRiesgos(){
+  const box=document.getElementById("riskbox");
+  Object.entries(RIESGOS).forEach(([grupo,items])=>{
+    const g=document.createElement("div"); g.className="riskgrp"; g.textContent=grupo; box.appendChild(g);
+    items.forEach(txt=>{
+      const l=document.createElement("label"); l.className="chk";
+      l.innerHTML='<input type="checkbox" value="'+txt+'"> <span>'+txt+'</span>';
+      box.appendChild(l);
+    });
+  });
+}
+function riesgosSeleccionados(){
+  return [...document.querySelectorAll('#riskbox input:checked')].map(i=>i.value);
+}
+
+/* ============================================================
+   MOTOR DE ESCENARIOS
+   ============================================================ */
+function clsHR(hr){ if(hr==="—")return"neutral"; if(hr<60)return"crit"; if(hr<100)return"warn"; return"ok"; }
+function clsSpo2(spo2,min){
+  if(spo2==="—")return"neutral";
+  const meta=metaSpo2(min); const [lo]=meta.replace(/%/g,"").split("–").map(Number);
+  return spo2>=lo?"ok":"warn";
+}
+
+// Genera la secuencia de estados según el endpoint del problema
+function construirEstados(p, ctx){
+  const S=[]; // {fase,step,clock,hr,spo2,fr,tono,color,hallazgos,accion,disparador}
+  const kg=ctx.kg, ga=ctx.ga;
+  const term = ga>=37;
+  // Estado basal común
+  const preterm = ga<37;
+
+  function push(o){ S.push(o); }
+
+  // BASAL (nacimiento / evaluación rápida)  o  (evaluación inicial del lactante que se deteriora)
+  if(ctx.postnatal){
+    push({fase:"Evaluación inicial — lactante que se deteriora",step:"1",clock:"0:00",
+      hr:"—",spo2:"—",fr:"Variable",tono:"Variable",color:"Palidez/cianosis",
+      hallazgos:"El equipo responde a una llamada de urgencia fuera de la sala de partos. Pide ayuda, aplica el ABC (vía aérea, respiración, circulación) y solicita antecedentes, evento desencadenante y signos vitales.",
+      accion:"Activar el sistema de ayuda, llevar el equipo de reanimación al sitio, evaluar vía aérea/respiración/FC y colocar monitor y pulsioxímetro.",
+      disparador:"Con la evaluación inicial hecha, seguir la vía del algoritmo NRP según los hallazgos."});
+  } else {
+    push({fase:"Estado basal — nacimiento",step:"1",clock:"0:00",
+      hr:"—",spo2:"—",fr:"—",tono:preterm?"Disminuido":"Variable",color:"Cianosis central",
+      hallazgos:"El equipo hace las 4 preguntas previas y la evaluación rápida (¿término? ¿tono? ¿respira/llora?).",
+      accion:"Briefing pre-reanimación, verificación de equipo, evaluación rápida y pasos iniciales (calor, vía aérea, secar, estimular).",
+      disparador:"Tras pasos iniciales, evaluar respiración y FC."});
+  }
+
+  switch(p.endpoint){
+    case "rutina": // término sano / bajo peso / macrosómico (sin deterioro)
+      push({fase:"Evaluación rápida — recién nacido vigoroso",step:"2",clock:"0:30",
+        hr:140,spo2:65,fr:"Llanto vigoroso",tono:"Adecuado (en flexión)",color:"Acrocianosis en transición",
+        hallazgos:p.fisio,
+        accion:"Responde 'sí' a término/tono/respira → permanece con la madre; pasos iniciales con ella (calor, secado, posición; despejar vía aérea solo si es necesario).",
+        disparador:"Si se mantiene vigoroso → contacto piel con piel y evaluación continua."});
+      push({fase:"Estabilización — atención de rutina",step:"3",clock:"5:00",
+        hr:150,spo2:92,fr:"Regular, sin distrés",tono:"Adecuado",color:"Rosado",
+        hallazgos:"Transición normal. "+(p.id==="bajo_peso"?"Reforzar termorregulación y vigilar glucemia (riesgo de hipotermia/hipoglucemia).":p.id==="hipertrofico"?"Vigilar hipoglucemia y descartar trauma obstétrico (clavícula/plexo braquial).":"Mantener contacto piel con piel."),
+        accion:"Atención de rutina, termorregulación, inicio de alimentación temprana; comunicar con la familia.",
+        disparador:"Objetivos cumplidos → fin del escenario."});
+      break;
+    case "defecto": { // defectos congénitos con manejo especial (Lección 10)
+      const manejo={
+        mmc:"Colocar al RN en decúbito prono o lateral; cubrir el saco con apósito estéril húmedo (SSN 0.9%) y precauciones libres de látex; evitar presión sobre el defecto y mantener termorregulación.",
+        gastrosquisis:"Envolver las asas expuestas en bolsa intestinal estéril/plástico; decúbito lateral derecho para evitar acodamiento del mesenterio; sonda orogástrica a descompresión; líquidos IV y termorregulación estricta.",
+        onfalocele:"Proteger el saco íntegro con apósito estéril/plástico sin romperlo; sonda orogástrica a descompresión; vigilar anomalías asociadas (cardiacas, Beckwith-Wiedemann) e hipoglucemia.",
+        microtia:"Examinar en busca de anomalías craneofaciales asociadas (microsomía hemifacial/Goldenhar); anticipar vía aérea difícil y tener disponible equipo de vía aérea alterna y personal experto."
+      }[p.id] || "Manejo especial del defecto congénito con termorregulación.";
+      push({fase:"Identificación y manejo especial del defecto",step:"2",clock:"0:45",
+        hr:140,spo2:65,fr:"Respiración espontánea (según el caso)",tono:"Adecuado",color:"Acrocianosis en transición",
+        hallazgos:p.fisio,
+        accion:manejo,
+        disparador:"Con el defecto protegido y el RN estable, continuar la estabilización y coordinar el traslado."});
+      push({fase:"Estabilización y traslado a centro de referencia",step:"3",clock:"5:00",
+        hr:150,spo2:92,fr:"Regular",tono:"Adecuado",color:"Rosado",
+        hallazgos:p.trampa,
+        accion:"Mantener la protección del defecto, la termorregulación y el acceso vascular; comunicar con la familia y coordinar el traslado a cirugía/UCIN.",
+        disparador:"Objetivos cumplidos → fin del escenario."});
+      break;
+    }
+    case "pasosIniciales": // p.ej. atresia de coanas
+      push({fase:"Deterioro — patrón paradójico",step:"2",clock:"1:00",
+        hr:140,spo2:70,fr:"Taquipnea con quejido en reposo",tono:"Adecuado",color:"Cianosis que mejora al llorar",
+        hallazgos:p.fisio,
+        accion:"Evaluar respiración y FC; reconocer el patrón; NO precipitar VPP.",
+        disparador:"Si el equipo identifica el patrón → maniobra de vía aérea."});
+      push({fase:"Punto crítico — reconocimiento",step:"3",clock:"2:00",
+        hr:145,spo2:78,fr:"Mejora al abrir la boca",tono:"Adecuado",color:"Rosado al llorar, cianótico en reposo",
+        hallazgos:"El equipo debe establecer una vía aérea oral (cánula orofaríngea) o estimular el llanto.",
+        accion:"Colocar cánula orofaríngea / mantener boca abierta; titular O₂ por SpO₂.",
+        disparador:"Con vía aérea permeable, la SpO₂ sube a meta."});
+      push({fase:"Respuesta correcta — estabilización",step:"4",clock:"5:00",
+        hr:150,spo2:92,fr:"Regular",tono:"Adecuado",color:"Rosado",
+        hallazgos:"SpO₂ dentro de meta con vía aérea oral. Plan de valoración por ORL.",
+        accion:"Monitorizar, comunicar con la familia y planear cuidados posreanimación.",
+        disparador:"Objetivos cumplidos → fin del escenario."});
+      break;
+
+    case "cpap": // TTN / distrés leve
+      push({fase:"Deterioro — distrés respiratorio",step:"2",clock:"1:00",
+        hr:150,spo2:72,fr:"Taquipnea 80/min, quejido, retracciones",tono:"Adecuado",color:"Cianosis leve",
+        hallazgos:p.fisio,
+        accion:"Reconocer respiración laboriosa con FC>100 → considerar CPAP, no VPP.",
+        disparador:"Si hay quejido/esfuerzo aumentado → sección CPAP."});
+      push({fase:"Punto crítico — inicio de CPAP",step:"3",clock:"2:00",
+        hr:150,spo2:80,fr:"Persiste quejido",tono:"Adecuado",color:"Mejorando",
+        hallazgos:"Iniciar CPAP 5 cmH₂O; titular FiO₂ ("+ctx.fio2+") por SpO₂. Considerar sonda orogástrica.",
+        accion:"CPAP 5 cmH₂O, monitor de SpO₂ en mano/muñeca derecha, sonda orogástrica.",
+        disparador:"Con CPAP efectiva, mejora el esfuerzo y la SpO₂."});
+      push({fase:"Respuesta correcta — estabilización",step:"4",clock:"5:00",
+        hr:150,spo2:88,fr:"Esfuerzo mejorado",tono:"Adecuado",color:"Rosado",
+        hallazgos:"SpO₂ acercándose a meta; distrés en descenso.",
+        accion:"Continuar CPAP y titular O₂; plan de cuidados y comunicación.",
+        disparador:"Objetivos cumplidos → fin del escenario."});
+      break;
+
+    case "vpp": // SDR / apnea que responde a VPP
+      push({fase:"Deterioro — apnea / FC<100",step:"2",clock:"0:45",
+        hr:80,spo2:"—",fr:"Apnea o boqueo",tono:preterm?"Muy disminuido":"Disminuido",color:"Cianosis central",
+        hallazgos:"Tras pasos iniciales el RN está apneico y con FC <100.",
+        accion:"Indicar VPP dentro de los primeros 60 s: FiO₂ "+ctx.fio2+", PIP "+ctx.pip+", PEEP 5, FR 30–60.",
+        disparador:"Colocar oxímetro; reevaluar FC a los 30 s de VPP."});
+      push({fase:"Punto crítico — respuesta a la VPP",step:"3",clock:"1:15",
+        hr:120,spo2:66,fr:"El tórax se mueve",tono:"Mejorando",color:"Mejorando",
+        hallazgos:"La VPP mueve el tórax y la FC empieza a subir. \"FC aumenta, tórax se mueve\".",
+        accion:"Continuar VPP 30 s; titular O₂ a SpO₂ meta; considerar monitor cardiaco.",
+        disparador:"Con FC>100 y respiración espontánea → descontinuar VPP gradualmente."});
+      push({fase:"Respuesta correcta — estabilización",step:"4",clock:"5:00",
+        hr:150,spo2:88,fr:"Espontánea y regular",tono:"Adecuado",color:"Rosado",
+        hallazgos:"FC>100, esfuerzo respiratorio sostenido; SpO₂ en meta.",
+        accion:"Retirar VPP, monitorizar y planear cuidados (surfactante/UCIN si pretérmino).",
+        disparador:"Objetivos cumplidos → fin del escenario."});
+      break;
+
+    case "mrsopa": // vía difícil que requiere pasos correctivos
+      push({fase:"Deterioro — VPP sin movimiento torácico",step:"2",clock:"0:45",
+        hr:70,spo2:"—",fr:"Apnea",tono:"Disminuido",color:"Cianosis",
+        hallazgos:"VPP iniciada pero SIN movimiento torácico ni ascenso de FC.",
+        accion:"Reconocer VPP inefectiva → iniciar pasos correctivos MR SOPA.",
+        disparador:"Sin movimiento torácico tras 15–30 s → MR SOPA."});
+      push({fase:"Punto crítico — MR SOPA",step:"3",clock:"1:30",
+        hr:70,spo2:"—",fr:"Sin movimiento inicial",tono:"Disminuido",color:"Cianosis",
+        hallazgos:"M (mascarilla) · R (reposición) · S (succión) · O (abrir boca) · P (presión hasta "+ctx.presMax+") · A (vía aérea alterna). "+p.trampa,
+        accion:"Aplicar los pasos MR SOPA priorizando los más útiles; considerar mascarilla laríngea.",
+        disparador:"Al lograr movimiento torácico → VPP 30 s y reevaluar FC."});
+      push({fase:"Respuesta correcta — estabilización",step:"4",clock:"3:00",
+        hr:130,spo2:82,fr:"Mejorando con VPP efectiva",tono:"Mejorando",color:"Mejorando",
+        hallazgos:"Con vía aérea permeable la FC asciende >100 y la SpO₂ entra en meta.",
+        accion:"Continuar VPP/soporte, titular O₂, comunicar plan.",
+        disparador:"Objetivos cumplidos → fin del escenario."});
+      break;
+
+    case "obstruido": // meconio
+      push({fase:"Deterioro — apnea, no vigoroso",step:"2",clock:"0:45",
+        hr:70,spo2:"—",fr:"Apnea",tono:"Disminuido",color:"Cianosis, meconio en vía aérea",
+        hallazgos:"RN no vigoroso con líquido meconial espeso; VPP no mueve el tórax.",
+        accion:"Pasos correctivos MR SOPA; si persiste sin movimiento → vía aérea alterna e intubación.",
+        disparador:"Sin movimiento torácico tras MR SOPA e intubación a presión máxima → obstrucción."});
+      push({fase:"Punto crítico — vía aérea obstruida",step:"3",clock:"1:45",
+        hr:70,spo2:"—",fr:"Tórax inmóvil pese a presión máxima",tono:"Disminuido",color:"Cianosis",
+        hallazgos:"Sin movimiento torácico tras intubar y alcanzar "+ctx.presMax+": sospechar obstrucción por meconio.",
+        accion:"Conectar aspirador traqueal (80–100 mmHg) y aspirar la tráquea retirando el tubo en 3–5 s; reintubar con tubo limpio.",
+        disparador:"Tras despejar la tráquea, la VPP mueve el tórax."});
+      push({fase:"Respuesta correcta — estabilización",step:"4",clock:"3:30",
+        hr:130,spo2:80,fr:"Ventilación efectiva",tono:"Mejorando",color:"Mejorando",
+        hallazgos:"Movimiento torácico restaurado; FC asciende >100; SpO₂ en meta.",
+        accion:"Continuar VPP/soporte, titular O₂ y planear cuidados posreanimación.",
+        disparador:"Objetivos cumplidos → fin del escenario."});
+      break;
+
+    case "intubacion": // CDH / hipoplasia / masa
+      push({fase:"Deterioro — dificultad respiratoria grave",step:"2",clock:"0:45",
+        hr:80,spo2:"—",fr:"Apnea o esfuerzo débil",tono:"Disminuido",color:"Cianosis",
+        hallazgos:p.fisio,
+        accion:"Reconocer indicación de vía aérea avanzada; en HDC evitar VPP con mascarilla prolongada.",
+        disparador:"Preparar intubación (TET "+ctx.tetTubo+", hoja "+ctx.tetHoja+")."});
+      push({fase:"Punto crítico — intubación",step:"3",clock:"1:45",
+        hr:90,spo2:70,fr:"—",tono:"Disminuido",color:"Mejorando lento",
+        hallazgos:"Intubar y confirmar (FC en ascenso, cambio de color del detector de CO₂, ruidos bilaterales, movimiento torácico). "+p.trampa,
+        accion:"Rol operador/asistente; profundidad por tabla o LNT; asegurar tubo. SOG a descompresión si HDC.",
+        disparador:"Con TET confirmado, VPP efectiva 30–60 s."});
+      push({fase:"Respuesta correcta — estabilización",step:"4",clock:"4:00",
+        hr:130,spo2:84,fr:"Ventilación efectiva por TET",tono:"Mejorando",color:"Mejorando",
+        hallazgos:"FC>100 con ventilación por TET; SpO₂ acercándose a meta.",
+        accion:"Soporte continuo, titular O₂, preparar traslado a centro quirúrgico.",
+        disparador:"Objetivos cumplidos → fin del escenario."});
+      break;
+
+    case "compresiones": // FC<60 pese a VPP efectiva
+      push({fase:"Deterioro — FC<100 con VPP",step:"2",clock:"0:45",
+        hr:70,spo2:"—",fr:"Apnea",tono:"Disminuido",color:"Cianosis",
+        hallazgos:"VPP iniciada; realizar MR SOPA hasta lograr movimiento torácico.",
+        accion:"MR SOPA; colocar oxímetro y monitor cardiaco.",
+        disparador:"Con tórax en movimiento pero FC<60 → vía aérea alterna y compresiones."});
+      push({fase:"Punto crítico — FC<60",step:"3",clock:"1:45",
+        hr:40,spo2:"—",fr:"Tórax se mueve, sin señal de oxímetro",tono:"Fláccido",color:"Palidez/cianosis",
+        hallazgos:"Tras 30 s de VPP que mueve el tórax con vía aérea alterna, la FC sigue <60. "+p.trampa,
+        accion:"Aumentar O₂ a 100%, iniciar compresiones 3:1 coordinadas, colocar monitor con ECG.",
+        disparador:"Reevaluar FC cada 60 s; considerar neumotórax/hipovolemia si no mejora."});
+      push({fase:"Respuesta correcta — recuperación",step:"4",clock:"3:00",
+        hr:80,spo2:68,fr:"Sin respiración espontánea aún",tono:"Mejorando",color:"Mejorando",
+        hallazgos:"Con VPP efectiva + compresiones + causa reversible tratada, la FC supera 60 y asciende.",
+        accion:"Suspender compresiones al superar 60; continuar VPP hasta FC>100.",
+        disparador:"FC>100 → estabilización; si persiste <60 → medicación."});
+      break;
+
+    case "medicacion": // FC<60 tras compresiones → UVC + adrenalina (± volumen)
+      push({fase:"Deterioro — VPP + MR SOPA + vía alterna",step:"2",clock:"1:00",
+        hr:60,spo2:"—",fr:"Apnea",tono:"Fláccido",color:"Palidez",
+        hallazgos:"VPP efectiva por vía aérea alterna, pero FC persiste ≤60.",
+        accion:"Aumentar O₂ a 100%, compresiones 3:1, preparar UVC y medicación.",
+        disparador:"Tras 60 s de compresiones con FC<60 → UVC + adrenalina."});
+      push({fase:"Punto crítico — UVC + adrenalina",step:"3",clock:"2:30",
+        hr:40,spo2:"—",fr:"Sin señal de oxímetro",tono:"Fláccido",color:"Palidez marcada",
+        hallazgos:"Insertar catéter venoso umbilical de urgencia y administrar adrenalina. "+p.trampa,
+        accion:"Adrenalina IV/IO "+ctx.dosis.ivMg+" mg ("+ctx.dosis.ivMl+" mL) y purgar con 3 mL SF; repetir c/3–5 min si FC<60. Vía ET "+ctx.dosis.etMg+" mg ("+ctx.dosis.etMl+" mL) mientras se coloca el UVC.",
+        disparador:"Si signos de choque/hipovolemia → expansor de volumen."});
+      push({fase:"Respuesta correcta — volumen y recuperación",step:"4",clock:"4:00",
+        hr:80,spo2:68,fr:"Sin respiración espontánea",tono:"Mejorando",color:"Mejorando",
+        hallazgos:"Expansor: SF "+ctx.dosis.vol+" mL (10 mL/kg) en 5–10 min por UVC. La FC asciende >80.",
+        accion:"Suspender compresiones al superar 60; continuar VPP hasta FC>100; titular O₂.",
+        disparador:"FC>100 → estabilización y cuidados posreanimación."});
+      break;
+
+    case "reconoceCC": // cardiopatía cianógena
+      push({fase:"Deterioro — cianosis desproporcionada",step:"2",clock:"1:30",
+        hr:150,spo2:78,fr:"Regular, sin distrés marcado",tono:"Adecuado",color:"Cianosis central",
+        hallazgos:"El RN respira, la FC es >100 y el tórax se mueve, pero la SpO₂ no sube como se espera.",
+        accion:"Confirmar ventilación efectiva; titular O₂; colocar oxímetro pre y postductal.",
+        disparador:"Si la SpO₂ se estanca pese a O₂ → sospechar cardiopatía."});
+      push({fase:"Punto crítico — SpO₂ refractaria",step:"3",clock:"3:00",
+        hr:150,spo2:80,fr:"Regular",tono:"Adecuado",color:"Cianosis persistente",
+        hallazgos:"SpO₂ atascada en 78–82% con FC normal y ventilación efectiva. "+p.trampa,
+        accion:"Evitar hiperoxia; mantener SpO₂ en meta; NO escalar O₂ de forma indiscriminada.",
+        disparador:"Reconocer cardiopatía → plan de PGE1 y traslado."});
+      push({fase:"Respuesta correcta — reconocimiento y traslado",step:"4",clock:"6:00",
+        hr:150,spo2:82,fr:"Regular",tono:"Adecuado",color:"Cianosis estable",
+        hallazgos:"El equipo reconoce la cardiopatía congénita, evita hiperoxia y activa cardiología / traslado (± PGE1).",
+        accion:"Monitorizar, comunicar con la familia, coordinar ecocardiograma y traslado.",
+        disparador:"Objetivos cumplidos → fin del escenario."});
+      break;
+  }
+
+  // RAMA ALTERNA (si el equipo NO ejecuta la acción crítica)
+  const alt = ramaAlterna(p.endpoint, ctx);
+  push(Object.assign({alt:true,fase:"Rama alterna — si el equipo NO actúa a tiempo",step:"⚠",clock:"—"},alt));
+
+  return S;
+}
+
+function ramaAlterna(endpoint, ctx){
+  const map={
+    rutina:{hr:140,spo2:60,fr:"Llanto que se interrumpe con la succión",tono:"Adecuado",color:"Acrocianosis",
+      hallazgos:"Si el equipo succiona o separa al RN de forma innecesaria, se interrumpe la transición y el contacto piel con piel.",
+      accion:"El instructor evidencia que la sobre-intervención no aporta y puede alterar la transición normal.",
+      disparador:"Redirigir: RN vigoroso → permanecer con la madre, evitar la succión de rutina."},
+    defecto:{hr:150,spo2:70,fr:"Variable",tono:"Adecuado",color:"Palidez / hipotermia",
+      hallazgos:"Si no se protege el defecto ni se controla la temperatura, aparecen hipotermia, pérdida hidroelectrolítica o compromiso del tejido/saco expuesto.",
+      accion:"El instructor evidencia las complicaciones de omitir el manejo especial (hipotermia, infección, isquemia intestinal, ruptura del saco).",
+      disparador:"Redirigir: proteger el defecto (apósito/plástico/posición), termorregular y descomprimir si aplica."},
+    pasosIniciales:{hr:130,spo2:60,fr:"Distrés en aumento",tono:"Decae",color:"Cianosis persistente",
+      hallazgos:"Si no se permeabiliza la vía aérea oral, la SpO₂ no mejora y el RN se agota.",
+      accion:"El instructor mantiene SpO₂ baja hasta que el equipo establezca la vía aérea oral.",
+      disparador:"Redirigir: ¿respirador nasal obligado? → cánula orofaríngea."},
+    cpap:{hr:150,spo2:62,fr:"Quejido persistente",tono:"Adecuado",color:"Cianosis",
+      hallazgos:"Sin CPAP, el distrés persiste y la SpO₂ no alcanza la meta.",
+      accion:"El instructor mantiene el esfuerzo aumentado hasta que se inicie CPAP.",
+      disparador:"Redirigir: respiración laboriosa con FC>100 → CPAP."},
+    vpp:{hr:60,spo2:"—",fr:"Apnea persistente",tono:"Fláccido",color:"Cianosis",
+      hallazgos:"Si la VPP se retrasa más allá de 60 s, la FC cae hacia <60.",
+      accion:"El instructor deja caer la FC para reforzar la urgencia de la VPP oportuna.",
+      disparador:"Redirigir: apnea/FC<100 → VPP en el primer minuto."},
+    mrsopa:{hr:50,spo2:"—",fr:"Sin movimiento torácico",tono:"Fláccido",color:"Cianosis",
+      hallazgos:"Sin pasos correctivos, no hay movimiento torácico y la FC desciende.",
+      accion:"El instructor anuncia \"sin movimiento torácico\" hasta que se realicen los pasos MR SOPA.",
+      disparador:"Redirigir: VPP sin movimiento torácico → MR SOPA."},
+    obstruido:{hr:50,spo2:"—",fr:"Tórax inmóvil",tono:"Fláccido",color:"Cianosis",
+      hallazgos:"Si se sigue subiendo presión sin aspirar la tráquea, no hay movimiento y la FC cae.",
+      accion:"El instructor mantiene el tórax inmóvil hasta que se aspire la tráquea.",
+      disparador:"Redirigir: sin movimiento pese a presión máxima → aspirar tráquea."},
+    intubacion:{hr:60,spo2:55,fr:"Distensión gástrica (si HDC)",tono:"Fláccido",color:"Cianosis",
+      hallazgos:"Si se ventila con mascarilla de forma prolongada (HDC), la distensión intestinal empeora la ventilación.",
+      accion:"El instructor empeora la distensibilidad hasta que se intube y coloque SOG.",
+      disparador:"Redirigir: HDC → intubar y descomprimir estómago."},
+    compresiones:{hr:40,spo2:"—",fr:"Sin señal de oxímetro",tono:"Fláccido",color:"Palidez",
+      hallazgos:"Sin compresiones (o compresiones antes de asegurar ventilación efectiva), la FC no mejora.",
+      accion:"El instructor mantiene FC<60 hasta lograr VPP efectiva + compresiones coordinadas.",
+      disparador:"Redirigir: primero inflar el pulmón; luego comprimir si FC<60."},
+    medicacion:{hr:30,spo2:"—",fr:"Sin señal",tono:"Fláccido",color:"Palidez",
+      hallazgos:"Sin acceso vascular y adrenalina, la FC persiste <60 pese a compresiones.",
+      accion:"El instructor mantiene FC<60 hasta administrar adrenalina IV por UVC.",
+      disparador:"Redirigir: FC<60 tras compresiones → UVC + adrenalina."},
+    reconoceCC:{hr:150,spo2:78,fr:"Regular",tono:"Adecuado",color:"Cianosis",
+      hallazgos:"Si el equipo escala O₂ e intenta \"corregir\" la SpO₂, no mejora y arriesga hiperoxia.",
+      accion:"El instructor mantiene la SpO₂ estancada pese al O₂ para elicitar el reconocimiento de cardiopatía.",
+      disparador:"Redirigir: ventilación efectiva + FC normal + SpO₂ refractaria → pensar en corazón."}
+  };
+  return map[endpoint]||map.vpp;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+let ULTIMO=null; // guarda el escenario para exportar/IA
+
+function generar(){
+  if(typeof simTeardown==="function") simTeardown();
+  if(typeof cerrarConstancia==="function") cerrarConstancia();
+  const ga=+document.getElementById("ga").value;
+  const b=bandFor(ga);
+  const cat=document.getElementById("categoria").value;
+  let pid=document.getElementById("problema").value;
+  const lista=PROBLEMAS[cat].filter(x=>x.id!=="auto");
+  let p;
+  if(pid==="auto"){
+    // sugerencia coherente con la GA
+    const compat=lista.filter(x=>(!x.gaMin||ga>=x.gaMin)&&(!x.gaMax||ga<=x.gaMax));
+    p=(compat.length?compat:lista)[Math.floor(Math.random()*(compat.length?compat.length:lista.length))];
+  }else{
+    p=lista.find(x=>x.id===pid);
+  }
+
+  const sexo=document.getElementById("sexo").value;
+  const fluido=document.getElementById("fluido").value;
+  const nivel=document.getElementById("nivel").value;
+  const parto=document.getElementById("parto").value;
+  const postnatal=document.getElementById("postnatal").checked;
+  const riesgos=riesgosSeleccionados();
+
+  const t=tet(b.kg,ga);
+  const ctx={
+    ga,kg:b.kg,peso:b.peso,fio2:fio2Inicial(ga),pip:pipRango(ga),
+    presMax:presionMax(ga),tetTubo:t.tubo,tetHoja:t.hoja,dosis:dosis(b.kg),postnatal
+  };
+
+  const estados=construirEstados(p,ctx);
+
+  // Coherencia de líquido: forzar meconio si el problema lo exige
+  const fluidoTxt = p.fluido && !fluido.includes("meconial") ? "meconial espeso" : etiquetaFluido(fluido);
+
+  ULTIMO={p,ctx,sexo,fluidoTxt,nivel,parto,riesgos,estados,ga,b,postnatal};
+  document.getElementById("out").innerHTML=renderDoc(ULTIMO);
+  document.getElementById("out").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function etiquetaFluido(v){
+  return {claro:"claro",["meconial-fluido"]:"meconial fluido",["meconial-espeso"]:"meconial espeso",
+    tenido:"teñido/sanguinolento",oligo:"oligohidramnios",poli:"polihidramnios"}[v]||v;
+}
+
+function nivelTxt(n){return{basico:"Básico (Essentials)",intermedio:"Intermedio",avanzado:"Avanzado (Advanced)"}[n];}
+
+function renderDoc(d){
+  const {p,ctx,sexo,fluidoTxt,nivel,parto,riesgos,estados,ga,b,postnatal}=d;
+  const rn = postnatal ? (sexo==="Femenino"?"la lactante":"el lactante") : (sexo==="Femenino"?"la recién nacida":"el recién nacido");
+  const titulo = tituloEscenario(p,ga);
+  const riesgosTxt = riesgos.length?riesgos.join(", "):"sin factores de riesgo aparentes";
+
+  // objetivos
+  const objBase = (p.obj||[]).slice();
+  if(postnatal) objBase.unshift("Reanimar y estabilizar a un lactante fuera de la sala de partos según sus necesidades (Lección 10).");
+  const objs = objBase.map((o,i)=>{
+    const tag = i===0?'<span class="obj-tag t-cog">Cognitivo</span>':(i===1?'<span class="obj-tag t-tec">Técnico</span>':'<span class="obj-tag t-crm">CRM</span>');
+    return "<li>"+tag+o+"</li>";
+  }).join("")+'<li><span class="obj-tag t-crm">CRM</span>Aplicar las Habilidades Conductuales Clave del NRP para mejorar el trabajo en equipo y la comunicación.</li>';
+
+  // números clave
+  const nums=[
+    ["Peso estimado",ctx.peso],
+    ["FiO₂ inicial",ctx.fio2],
+    ["PIP / PEEP",ctx.pip.replace(" cmH₂O","")+' <small>cmH₂O</small> / 5'],
+    ["Frecuencia VPP","30–60 <small>/min</small>"],
+    ["TET",ctx.tetTubo],
+    ["Hoja laringoscopio","N.º "+ctx.tetHoja],
+    ["Presión máx. MR SOPA",ctx.presMax],
+    ["Adrenalina IV/IO",ctx.dosis.ivMg+" mg <small>("+ctx.dosis.ivMl+" mL)</small>"],
+    ["Adrenalina TET",ctx.dosis.etMg+" mg <small>("+ctx.dosis.etMl+" mL)</small>"],
+    ["Expansor (SF)",ctx.dosis.vol+" mL <small>(10 mL/kg)</small>"],
+    ["SpO₂ meta 2 min","65–70%"],
+    ["SpO₂ meta 10 min","85–95%"]
+  ].map(([k,v])=>'<div class="num"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>').join("");
+
+  // preparación
+  const prep=[];
+  if(postnatal){
+    prep.push("Reanimación fuera de la sala de partos (cunero, habitación de la madre o entorno extrahospitalario): llevar el equipo de reanimación al sitio y activar el sistema de ayuda/traslado.");
+    prep.push("Fuente de calor disponible y control de temperatura según el entorno; monitor cardiaco y pulsioxímetro.");
+    prep.push("Acceso a insumos de reanimación compleja: medicaciones, acceso vascular (IV/IO) y vía aérea.");
+    prep.push("Preparar el registro de eventos y, si es posible, la filmación para el debriefing.");
+  } else {
+    prep.push("Sala configurada como "+(parto.includes("Cesárea")?"quirófano":"sala de partos")+"; cuna de calor radiante precalentada y verificación de equipo (NRP Quick Equipment Checklist).");
+    if(ga<32) prep.push("Pretérmino <32 sem: aumentar temperatura de la sala a 23–25 °C, bolsa/envoltura de polietileno, gorro y colchón térmico.");
+    if(ctx.ga<37 && ctx.ga>=32) prep.push("Termorregulación reforzada del pretérmino tardío.");
+    prep.push("Acceso a insumos de reanimación compleja: medicaciones neonatales y equipo para catéter venoso umbilical.");
+    prep.push("Preparar filmación del escenario para el debriefing.");
+  }
+
+  // checklist puntos críticos según endpoint
+  const checklist = checklistPara(p.endpoint,ctx).map(x=>'<li><span class="box"></span>'+x.t+(x.crit?' <span class="critflag">acción crítica</span>':'')+'</li>').join("");
+
+  // estados
+  const estadosHTML = estados.map(renderState).join("");
+
+  // debriefing
+  const debrief = renderDebrief(p);
+
+  return `
+  <div class="doc" id="doc">
+    <div class="doc-top">
+      <div class="kicker">Escenario de simulación · NRP 9.ª ed.</div>
+      <h2>${titulo}</h2>
+      <div class="meta">${nivelTxt(nivel)} · ${ga} semanas · ${sexo} · ${parto}</div>
+    </div>
+    <div class="doc-body">
+
+      <section class="blk"><h3><span class="n">1</span>Resumen clínico</h3>
+        <p>${postnatal
+          ? `Presenta a ${rn} de <b>${ga} semanas</b> de edad gestacional (${ctx.peso}) que se deteriora <b>fuera de la sala de partos</b>, con antecedentes: <b>${riesgosTxt}</b>. El caso requiere reconocer y manejar <b>${p.label.toLowerCase()}</b> siguiendo el algoritmo NRP 9.ª ed. (reanimación fuera de la sala de partos, Lección 10).`
+          : `Presenta el nacimiento (${parto.toLowerCase()}) de ${rn} de <b>${ga} semanas</b> (${ctx.peso}) con líquido amniótico <b>${fluidoTxt}</b> y antecedentes: <b>${riesgosTxt}</b>. El caso requiere reconocer y manejar <b>${p.label.toLowerCase()}</b> siguiendo el algoritmo NRP 9.ª ed.`}</p>
+      </section>
+
+      <section class="blk"><h3><span class="n">2</span>Objetivos de aprendizaje</h3>
+        <ul>${objs}</ul>
+      </section>
+
+      <section class="blk"><h3><span class="n">3</span>Información para el instructor</h3>
+        <p><b>Diagnóstico real:</b> ${p.label}.</p>
+        <p><b>Fisiopatología:</b> ${p.fisio}</p>
+        <div class="trap"><div class="lbl">⚠ Trampa del caso</div><p>${p.trampa}</p></div>
+      </section>
+
+      <section class="blk"><h3><span class="n">4</span>Cifras clave (calibradas NRP 9.ª ed.)</h3>
+        <div class="nums">${nums}</div>
+      </section>
+
+      <section class="blk"><h3><span class="n">5</span>Preparación / ambiente</h3>
+        <ul>${prep.map(x=>"<li>"+x+"</li>").join("")}</ul>
+      </section>
+
+      <section class="blk"><h3><span class="n">6</span>Briefing para el participante</h3>
+        <p><i>"${postnatal
+          ? `Respondes a una llamada de urgencia por ${rn} que se deteriora fuera de la sala de partos. Pide ayuda, evalúa el ABC y solicita antecedentes y signos vitales. Piensa en voz alta mientras trabajas.`
+          : `Te llaman para atender un ${parto.toLowerCase()} de ${rn} que puede requerir reanimación. Puedes preguntar al proveedor obstétrico. Piensa en voz alta mientras trabajas.`}"</i></p>
+        <p><b>${postnatal?"Datos del caso:":"Respuestas a las 4 preguntas previas:"}</b> ${postnatal
+          ? `edad ${ga} semanas de EG · peso ${ctx.peso} · antecedentes: ${riesgosTxt} · evento: deterioro fuera de la sala de partos`
+          : `EG ${ga} semanas · líquido ${fluidoTxt} · factores de riesgo: ${riesgosTxt} · plan de cordón: pinzamiento diferido ≥60 s salvo que requiera reanimación inmediata`}.</p>
+      </section>
+
+      <section class="blk"><h3><span class="n">7</span>Estados del escenario <span style="font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.72rem">(formato AHA/Laerdal · lectura tipo monitor)</span></h3>
+        <div class="states">${estadosHTML}</div>
+      </section>
+
+      <section class="blk"><h3><span class="n">8</span>Puntos clave de desempeño</h3>
+        <ul class="ck">${checklist}</ul>
+      </section>
+
+      <section class="blk"><h3><span class="n">9</span>Guion de debriefing (PEARLS · GAS)</h3>
+        ${debrief}
+        <div id="aiSlot"></div>
+      </section>
+
+      <section class="blk"><h3><span class="n">10</span>Variantes / escalamiento</h3>
+        <ul>
+          <li><b>Más fácil:</b> el instructor confirma movimiento torácico y ascenso de FC antes; reduce factores de riesgo y usa GA de término.</li>
+          <li><b>Más difícil:</b> añade un factor de riesgo de la Lección 6–7, retrasa la respuesta fisiológica y exige documentación en tiempo real (escriba) y monitor con ECG.</li>
+          <li><b>Cambio de rol:</b> asigna al participante el papel de asistente si la habilidad técnica no está en su alcance (Essentials vs. Advanced).</li>
+        </ul>
+      </section>
+
+      <section class="blk"><h3><span class="n">11</span>Referencias</h3>
+        <ul class="refs">
+          <li>American Academy of Pediatrics &amp; American Heart Association. <i>Textbook of Neonatal Resuscitation (NRP), 9.ª ed.</i>, 2021.</li>
+          <li>NRP 9th Edition Instructor Toolkit: Scenario Builder, Scenario Template, Practice Scenarios (Lecciones 2–7), NRP 9th Edition Practice Changes, Quick Equipment Checklist, Debrief the Debriefer Checklist.</li>
+          <li>Guías AHA/ILCOR 2020 para reanimación neonatal.</li>
+        </ul>
+      </section>
+
+      <div id="evalSlot"></div>
+      <div id="simSlot"></div>
+
+    </div>
+    <div class="toolbar">
+      <button class="btn-primary" style="flex:none" onclick="abrirSim()">🫀 Simulación en vivo</button>
+      <button class="btn-ghost" onclick="window.print()">🖨 Imprimir / PDF</button>
+      <button class="btn-ghost" onclick="copiarTexto()">📋 Copiar texto</button>
+      <button class="btn-ghost" id="evalBtn" onclick="toggleEval()">📊 Modo evaluación</button>
+      <button class="btn-ghost" id="aiBtn" onclick="enriquecerIA()">✨ Enriquecer con IA</button>
+      <div class="spacer"></div>
+      <button class="btn-ghost" onclick="nuevoEscenario()">🔄 Nuevo escenario</button>
+    </div>
+    <div class="ai-note">La función IA usa la API de Claude cuando la herramienta corre dentro de Claude.ai. Si la alojas en GitHub Pages necesitarás conectar tu propia clave/endpoint; el resto del generador funciona sin conexión.</div>
+  </div>`;
+}
+
+function renderState(s){
+  const hrCls=clsHR(s.hr);
+  const min=parseInt((s.clock||"0:00").split(":")[0])||2;
+  const spo2Cls=clsSpo2(s.spo2,min);
+  const meta = (s.spo2!=="—")?'<small> meta '+metaSpo2(min)+'</small>':'';
+  return `<div class="state${s.alt?' alt':''}">
+    <div class="st-head"><div class="ph"><span class="step">${s.step}</span>${s.fase}</div><div class="clock">t ${s.clock}</div></div>
+    <div class="monitor">
+      <div class="vs"><div class="lab">FC lpm</div><div class="val ${hrCls}">${s.hr}</div></div>
+      <div class="vs"><div class="lab">SpO₂ preductal</div><div class="val ${spo2Cls}">${s.spo2}${s.spo2!=="—"?'<small>%</small>':''}${meta}</div></div>
+      <div class="vs"><div class="lab">Esfuerzo resp.</div><div class="val neutral" style="font-size:.82rem;padding-top:4px">${s.fr}</div></div>
+      <div class="vs"><div class="lab">Tono</div><div class="val neutral" style="font-size:.82rem;padding-top:4px">${s.tono}</div></div>
+      <div class="vs"><div class="lab">Color</div><div class="val neutral" style="font-size:.82rem;padding-top:4px">${s.color}</div></div>
+    </div>
+    <div class="st-body">
+      <div class="cell"><div class="h">Hallazgos</div><p>${s.hallazgos}</p></div>
+      <div class="cell"><div class="h">Acción esperada del equipo</div><p>${s.accion}</p></div>
+      <div class="cell st-full"><div class="h">Disparador</div><p class="trigger">${s.disparador}</p></div>
+    </div>
+  </div>`;
+}
+
+function checklistPara(endpoint,ctx){
+  const base=[
+    {t:"Realiza las 4 preguntas previas y el briefing pre-reanimación con asignación de roles."},
+    {t:"Verifica el equipo con el NRP Quick Equipment Checklist."},
+    {t:"Ejecuta pasos iniciales (calor, vía aérea, secar, estimular) y evalúa FC y respiración.",crit:true}
+  ];
+  const map={
+    rutina:[{t:"Confirma RN vigoroso (término, buen tono, respira/llora)."},{t:"Mantiene contacto piel con piel y evita intervenciones innecesarias.",crit:true},{t:"Aplica termorregulación y evaluación continua (vigila glucemia si bajo peso/hipertrófico)."}],
+    defecto:[{t:"Identifica el defecto congénito y aplica el manejo especial (posición / cobertura estéril o plástico).",crit:true},{t:"Mantiene termorregulación estricta y descompresión gástrica (SOG) si hay defecto abdominal."},{t:"Anticipa anomalías asociadas y coordina el traslado a centro quirúrgico/UCIN."}],
+    pasosIniciales:[{t:"Reconoce el patrón cianosis-en-reposo/rosado-al-llorar."},{t:"Establece vía aérea oral en vez de escalar O₂.",crit:true},{t:"Titula O₂ a la SpO₂ meta por minuto."}],
+    cpap:[{t:"Reconoce respiración laboriosa con FC>100."},{t:"Inicia CPAP 5 cmH₂O y titula FiO₂ ("+ctx.fio2+").",crit:true},{t:"Coloca sonda orogástrica y monitoriza SpO₂."}],
+    vpp:[{t:"Indica VPP en el primer minuto ante apnea/FC<100.",crit:true},{t:"Ajusta FiO₂ "+ctx.fio2+", PIP "+ctx.pip+", PEEP 5, FR 30–60."},{t:"Reevalúa FC y movimiento torácico a los 30 s."}],
+    mrsopa:[{t:"Reconoce VPP inefectiva (sin movimiento torácico)."},{t:"Ejecuta MR SOPA priorizando los pasos más útiles.",crit:true},{t:"Considera vía aérea alterna (mascarilla laríngea/TET)."}],
+    obstruido:[{t:"Completa MR SOPA e intuba ante VPP inefectiva."},{t:"Sospecha obstrucción sin movimiento pese a presión máxima."},{t:"Aspira la tráquea con aspirador de meconio y reintuba.",crit:true}],
+    intubacion:[{t:"Reconoce la indicación de vía aérea avanzada."},{t:"Intuba con TET "+ctx.tetTubo+" y confirma (CO₂, FC, ruidos, tórax).",crit:true},{t:"Coloca SOG a descompresión si HDC; asegura el tubo."}],
+    compresiones:[{t:"Asegura VPP que mueve el tórax antes de comprimir.",crit:true},{t:"Inicia compresiones 3:1 con O₂ 100% y monitor ECG."},{t:"Reevalúa FC cada 60 s; considera neumotórax/hipovolemia."}],
+    medicacion:[{t:"Coordina compresiones + VPP efectivas por vía alterna."},{t:"Inserta UVC y administra adrenalina IV "+ctx.dosis.ivMl+" mL, purga 3 mL SF.",crit:true},{t:"Administra expansor SF "+ctx.dosis.vol+" mL en 5–10 min por signos de choque."}],
+    reconoceCC:[{t:"Confirma ventilación efectiva antes de atribuir la cianosis al pulmón."},{t:"Reconoce SpO₂ refractaria con FC normal como bandera de cardiopatía."},{t:"Evita hiperoxia; mantiene SpO₂ en meta y activa traslado/PGE1.",crit:true}]
+  };
+  return base.concat(map[endpoint]||[]);
+}
+
+function renderDebrief(p){
+  // Advocacy-Inquiry específicas del problema
+  const ai = aiQuestions(p);
+  const gather = [
+    "En 2–3 frases, describe la condición clínica inicial de este recién nacido.",
+    "¿Qué fue lo más útil que hizo un miembro del equipo durante esta reanimación?"
+  ];
+  const summarize = [
+    "¿Qué te llevas de este escenario que aplicarás en la próxima reanimación?",
+    "Nombra un ejemplo concreto de una Habilidad Conductual Clave del NRP que usaste (o debiste usar)."
+  ];
+  return `<div class="gas">
+    <div class="gphase"><div class="gh"><span class="pill">Gather</span>Reacciones</div>
+      <ul>${gather.map(q=>"<li>"+q+"</li>").join("")}</ul></div>
+    <div class="gphase analyze"><div class="gh"><span class="pill">Analyze</span>Análisis · Advocacy-Inquiry</div>
+      <ul>${ai.map(q=>'<li class="ai-q"><b>Observé…</b> '+q.obs+' <b>me pregunto…</b> '+q.ask+'</li>').join("")}</ul></div>
+    <div class="gphase summ"><div class="gh"><span class="pill">Summarize</span>Cierre · puntos a llevar</div>
+      <ul>${summarize.map(q=>"<li>"+q+"</li>").join("")}</ul>
+      <p style="font-size:.8rem;color:var(--muted);margin:6px 0 0">Errores frecuentes: escalar O₂/presión antes de corregir la causa, retrasar la VPP más allá de 60 s, iniciar compresiones sin ventilación efectiva. Abórdalos sin juicio, usando más preguntas que afirmaciones (Debrief the Debriefer Checklist).</p>
+    </div>
+  </div>`;
+}
+
+function aiQuestions(p){
+  const generic=[
+    {obs:"que el equipo evaluó la FC y la respiración tras los pasos iniciales,",ask:"cómo decidieron cuál era el siguiente paso del algoritmo?"},
+    {obs:"cómo se comunicó el líder con el equipo en el punto crítico,",ask:"qué habría hecho más clara esa comunicación de asa cerrada?"}
+  ];
+  const perEndpoint={
+    reconoceCC:[
+      {obs:"que la SpO₂ no mejoró pese al oxígeno con una FC normal,",ask:"qué te hizo (o te habría hecho) pensar en una cardiopatía en vez de un problema pulmonar?"},
+      {obs:"la tentación de subir el oxígeno para 'corregir' la saturación,",ask:"qué riesgo tiene la hiperoxia en una cardiopatía ductus-dependiente?"}
+    ],
+    obstruido:[
+      {obs:"que el tórax no se movía pese a alcanzar la presión máxima,",ask:"en qué momento decidiste sospechar una vía aérea obstruida en lugar de seguir subiendo presión?"},
+      {obs:"la secuencia de MR SOPA antes de aspirar la tráquea,",ask:"cómo confirmaste que ya habías agotado los pasos correctivos?"}
+    ],
+    intubacion:[
+      {obs:"la decisión de asegurar una vía aérea avanzada,",ask:"qué signos te indicaron que la ventilación con mascarilla no sería suficiente (o sería contraproducente)?"},
+      {obs:"la coordinación operador–asistente durante la intubación,",ask:"cómo repartieron las tareas para mantener el intento por debajo de 30 s?"}
+    ],
+    medicacion:[
+      {obs:"que la FC persistió <60 pese a compresiones,",ask:"cómo verificaste que la ventilación era efectiva antes de administrar adrenalina?"},
+      {obs:"la preparación del acceso venoso umbilical,",ask:"qué habría acelerado la administración de la primera dosis de adrenalina?"}
+    ],
+    compresiones:[
+      {obs:"el momento en que iniciaron las compresiones,",ask:"cómo confirmaron que la VPP ya movía el tórax antes de comprimir?"},
+      {obs:"la coordinación 3:1 entre compresor y ventilador,",ask:"qué señales usaron para mantener el ritmo y las pausas de evaluación?"}
+    ]
+  };
+  return (perEndpoint[p.endpoint]||generic).concat([generic[1]]).slice(0,4);
+}
+
+function tituloEscenario(p,ga){
+  const base=p.label;
+  return `RN de ${ga} sem — ${base}`;
+}
+
+/* ============================================================
+   EXPORTAR / COPIAR / IA
+   ============================================================ */
+function copiarTexto(){
+  if(!ULTIMO) return;
+  const doc=document.getElementById("doc");
+  const txt=doc.innerText.replace(/\n{3,}/g,"\n\n");
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=event.target; const o=btn.textContent; btn.textContent="✓ Copiado";
+    setTimeout(()=>btn.textContent=o,1500);
+  }).catch(()=>alert("No se pudo copiar automáticamente. Selecciona el texto manualmente."));
+}
+
+async function enriquecerIA(){
+  if(!ULTIMO) return;
+  const btn=document.getElementById("aiBtn");
+  const slot=document.getElementById("aiSlot");
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Generando…';
+  const {p,ctx,ga}=ULTIMO;
+  const prompt=`Eres instructor internacional de NRP 9.ª ed. Amplía SOLO en español y de forma concisa (máx. 180 palabras) para este escenario de simulación neonatal:
+- Diagnóstico: ${p.label} en RN de ${ga} semanas (${ctx.peso}).
+- Fisiopatología base: ${p.fisio}
+Entrega tres apartados breves con estos encabezados exactos:
+1) Fisiopatología ampliada (2-3 frases clínicas precisas).
+2) Guion para comunicar con la familia (2-3 frases empáticas que diría el líder).
+3) Dos preguntas adicionales de Advocacy-Inquiry ("Observé… me pregunto…") ligadas a la trampa del caso.
+No inventes dosis fuera del rango NRP.`;
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+    });
+    const data=await r.json();
+    const text=(data.content||[]).filter(x=>x.type==="text").map(x=>x.text).join("\n").trim();
+    slot.innerHTML='<div class="ai-block"><div class="aih">✨ Ampliación generada con IA</div>'+ (text||"(sin contenido)") +'</div>';
+  }catch(e){
+    slot.innerHTML='<div class="ai-block"><div class="aih">IA no disponible</div>La API de Claude no está accesible en este entorno (probablemente estás fuera de Claude.ai). El escenario base ya está completo; para habilitar la IA en tu propio sitio, conecta tu clave/endpoint de la API de Anthropic.</div>';
+  }finally{
+    btn.disabled=false; btn.innerHTML='✨ Enriquecer con IA';
+  }
+}
+
+function aleatorio(){
+  document.getElementById("sexo").selectedIndex=Math.floor(Math.random()*2);
+  const gaSel=document.getElementById("ga");
+  gaSel.selectedIndex=Math.floor(Math.random()*gaSel.options.length);
+  actualizarPesoHint();
+  const cats=["respiratorio","genetico","cardiaco"];
+  document.getElementById("categoria").value=cats[Math.floor(Math.random()*3)];
+  poblarProblemas();
+  document.getElementById("problema").value="auto";
+  // limpiar riesgos y marcar 1
+  document.querySelectorAll('#riskbox input').forEach(i=>i.checked=false);
+  const all=[...document.querySelectorAll('#riskbox input')];
+  if(all.length) all[Math.floor(Math.random()*all.length)].checked=true;
+  generar();
+}
+
+/* ============================================================
+   MÓDULO DE EVALUACIÓN SUMATIVA
+   Escala por ítem: Sí (2) · Con apoyo (1) · No (0)
+   Umbral de competencia: 80% + todas las acciones críticas en "Sí"
+   ============================================================ */
+const UMBRAL=0.80;
+
+function toggleEval(){
+  const slot=document.getElementById("evalSlot");
+  const btn=document.getElementById("evalBtn");
+  if(slot.dataset.open==="1"){ slot.innerHTML=""; slot.dataset.open="0"; btn.textContent="📊 Modo evaluación"; return; }
+  slot.innerHTML=renderRubrica();
+  slot.dataset.open="1"; btn.textContent="✕ Cerrar evaluación";
+  calcScore();
+  slot.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function renderRubrica(){
+  const {p,ctx}=ULTIMO;
+  const items=checklistPara(p.endpoint,ctx);
+  const filas=items.map((it,i)=>{
+    const gate=it.crit?' gate':'';
+    const cf=it.crit?'<span class="cf">crítica</span>':'';
+    const r=v=>`<td class="sc"><input type="radio" name="ri${i}" value="${v}" onchange="calcScore()"></td>`;
+    return `<tr class="${gate.trim()}" data-gate="${it.crit?1:0}">
+      <td class="item">${it.t}${cf}</td>${r(2)}${r(1)}${r(0)}</tr>`;
+  }).join("");
+
+  return `<div class="evalcard" id="evalcard">
+    <div class="eval-h">
+      <div><div class="t">Evaluación sumativa · verificación de competencia</div>
+      <div class="sub">${ULTIMO.p.label} · RN ${ULTIMO.ga} sem · escala Sí (2) / Con apoyo (1) / No (0)</div></div>
+    </div>
+    <div class="eval-meta">
+      <div><label>Participante</label><input id="ev_part" placeholder="Nombre y credenciales"></div>
+      <div><label>Rol en la reanimación</label><input id="ev_rol" placeholder="Líder / operador / asistente"></div>
+      <div><label>Evaluador (instructor)</label><input id="ev_eval" placeholder="Nombre del instructor"></div>
+      <div><label>Fecha</label><input id="ev_fecha" type="date"></div>
+    </div>
+    <table class="rubric">
+      <thead><tr><th>Acción crítica de desempeño</th><th class="sc">Sí</th><th class="sc">Apoyo</th><th class="sc">No</th></tr></thead>
+      <tbody>${filas}</tbody>
+    </table>
+    <div class="eval-extra">
+      <div class="fld"><label>Tiempo a VPP efectiva (meta ≤ 60 s)</label>
+        <select id="ev_vpp" onchange="calcScore()">
+          <option value="na">No aplica a este escenario</option>
+          <option value="ok">≤ 60 s (dentro de meta)</option>
+          <option value="late">&gt; 60 s (fuera de meta)</option>
+        </select></div>
+      <div class="fld"><label>Habilidades Conductuales Clave del NRP observadas</label>
+        <select id="ev_crm" onchange="calcScore()">
+          <option value="2">Consistentes (liderazgo, asa cerrada, roles claros)</option>
+          <option value="1">Parciales</option>
+          <option value="0">Ausentes</option>
+        </select></div>
+      <div class="fld" style="grid-column:1/-1"><label>Comentarios / plan de remediación</label>
+        <textarea id="ev_com" placeholder="Fortalezas, brechas y plan de práctica dirigida (según Debrief the Debriefer Checklist)."></textarea></div>
+    </div>
+    <div class="score" id="ev_score"></div>
+    <div class="eval-tools">
+      <button class="btn-primary" style="flex:none" onclick="generarConstancia()">🏅 Generar / imprimir constancia</button>
+      <button class="btn-ghost" onclick="window.print()">🖨 Imprimir evaluación</button>
+      <button class="btn-ghost" onclick="copiarEval()">📋 Copiar resultado</button>
+    </div>
+  </div>`;
+}
+
+function calcScore(){
+  const card=document.getElementById("evalcard"); if(!card) return;
+  const rows=[...card.querySelectorAll("tbody tr")];
+  let got=0, max=0, gateFail=false, sinResponder=0;
+  rows.forEach(tr=>{
+    const sel=tr.querySelector('input[type=radio]:checked');
+    max+=2;
+    if(!sel){ sinResponder++; return; }
+    const v=+sel.value; got+=v;
+    if(tr.dataset.gate==="1" && v<2) gateFail=true;
+  });
+  // extras que suman
+  const crm=+(document.getElementById("ev_crm")||{value:0}).value; got+=crm; max+=2;
+  const vpp=(document.getElementById("ev_vpp")||{value:"na"}).value;
+  if(vpp==="late") gateFail=true; // VPP tardía = compuerta fallida cuando aplica
+
+  const pct = max? got/max : 0;
+  const pctTxt=Math.round(pct*100);
+  let vcls,vtxt;
+  if(gateFail){ vcls="gatefail"; vtxt="Requiere repetir (acción crítica fallida)"; }
+  else if(sinResponder>0){ vcls="no"; vtxt="Evaluación incompleta"; }
+  else if(pct>=UMBRAL){ vcls="ok"; vtxt="Competente"; }
+  else { vcls="no"; vtxt="Requiere práctica dirigida"; }
+
+  const note = gateFail
+    ? "Una acción crítica marcada como \"Con apoyo/No\" (o VPP > 60 s) obliga a repetir el escenario, independientemente del puntaje."
+    : (sinResponder>0? "Faltan "+sinResponder+" ítem(s) por calificar." : "Umbral de competencia: "+Math.round(UMBRAL*100)+"% y todas las acciones críticas en \"Sí\".");
+
+  const competente = !gateFail && sinResponder===0 && pct>=UMBRAL;
+  card.dataset.competente = competente?"1":"0";
+  card.dataset.pct = pctTxt;
+
+  const certBtn = competente
+    ? '<button class="cert-cta" onclick="generarConstancia()">🏅 Generar constancia</button>'
+    : '';
+
+  document.getElementById("ev_score").innerHTML=
+    '<div class="big">'+pctTxt+'<small>%</small></div>'+
+    '<div class="verdict '+vcls+'">'+vtxt+'</div>'+
+    '<div class="note">'+got+'/'+max+' puntos · '+note+'</div>'+
+    certBtn;
+}
+
+function copiarEval(){
+  const g=id=>{const e=document.getElementById(id);return e?(e.value||"—"):"—";};
+  const card=document.getElementById("evalcard");
+  const rows=[...card.querySelectorAll("tbody tr")].map(tr=>{
+    const sel=tr.querySelector('input:checked');
+    const val=sel?({2:"Sí",1:"Con apoyo",0:"No"})[sel.value]:"(sin calificar)";
+    const item=tr.querySelector(".item").innerText;
+    return "• "+item+" → "+val;
+  }).join("\n");
+  const sc=document.getElementById("ev_score").innerText.replace(/\n+/g," ");
+  const txt=`EVALUACIÓN SUMATIVA NRP 9.ª ed. — ${ULTIMO.p.label} (RN ${ULTIMO.ga} sem)
+Participante: ${g("ev_part")} · Rol: ${g("ev_rol")}
+Evaluador: ${g("ev_eval")} · Fecha: ${g("ev_fecha")}
+
+${rows}
+
+Tiempo a VPP: ${g("ev_vpp")} · Habilidades conductuales: ${g("ev_crm")}
+Comentarios: ${g("ev_com")}
+
+RESULTADO: ${sc}`;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b=event.target,o=b.textContent;b.textContent="✓ Copiado";setTimeout(()=>b.textContent=o,1500);
+  }).catch(()=>alert("Selecciona y copia el texto manualmente."));
+}
+
+
+/* ====== Codificador QR autónomo (validado con jsQR) ====== */
+// Codificador QR autónomo — modo byte, niveles L/M, versiones 1..10, con RS y máscaras.
+// Devuelve matriz booleana [size][size]. Sin dependencias.
+const QRGEN=(function(){
+  // ---- GF(256) ----
+  const EXP=new Array(512), LOG=new Array(256);
+  (function(){let x=1;for(let i=0;i<255;i++){EXP[i]=x;LOG[x]=i;x<<=1;if(x&0x100)x^=0x11d;}for(let i=255;i<512;i++)EXP[i]=EXP[i-255];})();
+  const mul=(a,b)=>(a===0||b===0)?0:EXP[LOG[a]+LOG[b]];
+  function genPoly(deg){let p=[1];for(let d=0;d<deg;d++){const n=new Array(p.length+1).fill(0);for(let i=0;i<p.length;i++){n[i]^=p[i];n[i+1]^=mul(p[i],EXP[d]);}p=n;}return p;}
+  function rsRemainder(data,ec){const g=genPoly(ec);const res=data.concat(new Array(ec).fill(0));for(let i=0;i<data.length;i++){const c=res[i];if(c!==0)for(let j=0;j<g.length;j++)res[i+j]^=mul(g[j],c);}return res.slice(data.length);}
+
+  // ---- Tablas de bloques EC: [ecPerBlock, [ [numBlocks,dataCw], ... ] ] por versión (1..10) ----
+  const BLOCKS={
+    L:{1:[7,[[1,19]]],2:[10,[[1,34]]],3:[15,[[1,55]]],4:[20,[[1,80]]],5:[26,[[1,108]]],6:[18,[[2,68]]],7:[20,[[2,78]]],8:[24,[[2,97]]],9:[30,[[2,116]]],10:[18,[[2,68],[2,69]]]},
+    M:{1:[10,[[1,16]]],2:[16,[[1,28]]],3:[26,[[1,44]]],4:[18,[[2,32]]],5:[24,[[2,43]]],6:[16,[[4,27]]],7:[18,[[4,31]]],8:[22,[[2,38],[2,39]]],9:[22,[[3,36],[2,37]]],10:[26,[[4,43],[1,44]]]}
+  };
+  const ALIGN={1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50]};
+
+  function dataCapacity(ver,ecl){const[ec,groups]=BLOCKS[ecl][ver];let n=0;for(const[nb,dc]of groups)n+=nb*dc;return n;}
+  function pickVersion(len,ecl){const need=len+2+1; for(let v=1;v<=10;v++){if(dataCapacity(v,ecl)>=need)return v;} throw new Error("Datos demasiado largos para v≤10");}
+
+  function bytesFromString(s){const u=unescape(encodeURIComponent(s));const a=[];for(let i=0;i<u.length;i++)a.push(u.charCodeAt(i));return a;}
+
+  function buildData(text,ecl){
+    const bytes=bytesFromString(text);
+    const ver=pickVersion(bytes.length,ecl);
+    const totalData=dataCapacity(ver,ecl);
+    // bitstream
+    let bits=[];
+    const push=(val,len)=>{for(let i=len-1;i>=0;i--)bits.push((val>>i)&1);};
+    push(0b0100,4);                 // modo byte
+    const ccBits = ver<10?8:16;     // conteo (byte mode, v<10 => 8 bits)
+    push(bytes.length,ccBits);
+    for(const b of bytes)push(b,8);
+    // terminador
+    const cap=totalData*8;
+    for(let i=0;i<4 && bits.length<cap;i++)bits.push(0);
+    while(bits.length%8!==0)bits.push(0);
+    // relleno
+    const pads=[0xEC,0x11];let pi=0;
+    while(bits.length<cap){push(pads[pi%2],8);pi++;}
+    // a codewords
+    const cw=[];for(let i=0;i<bits.length;i+=8){let v=0;for(let j=0;j<8;j++)v=(v<<1)|bits[i+j];cw.push(v);}
+    // bloques
+    const[ecLen,groups]=BLOCKS[ecl][ver];
+    const dataBlocks=[],ecBlocks=[];let idx=0;
+    for(const[nb,dc]of groups){for(let b=0;b<nb;b++){const blk=cw.slice(idx,idx+dc);idx+=dc;dataBlocks.push(blk);ecBlocks.push(rsRemainder(blk,ecLen));}}
+    // interleave data
+    const maxD=Math.max(...dataBlocks.map(b=>b.length));
+    const out=[];
+    for(let i=0;i<maxD;i++)for(const blk of dataBlocks)if(i<blk.length)out.push(blk[i]);
+    for(let i=0;i<ecLen;i++)for(const blk of ecBlocks)out.push(blk[i]);
+    // a bits finales
+    const fin=[];for(const b of out)for(let i=7;i>=0;i--)fin.push((b>>i)&1);
+    return {ver,bits:fin};
+  }
+
+  // ---- Matriz ----
+  function newMatrix(size){const m=[];for(let i=0;i<size;i++){m.push(new Array(size).fill(null));}return m;}
+  function placeFinder(m,r,c){for(let dr=-1;dr<=7;dr++)for(let dc=-1;dc<=7;dc++){const rr=r+dr,cc=c+dc;if(rr<0||cc<0||rr>=m.length||cc>=m.length)continue;const inRing=(dr>=0&&dr<=6&&(dc===0||dc===6))||(dc>=0&&dc<=6&&(dr===0||dr===6));const inCore=(dr>=2&&dr<=4&&dc>=2&&dc<=4);m[rr][cc]=(inRing||inCore)?1:0;}}
+  function reserve(m,r,c){m[r][c]=(m[r][c]===null)? 'r':m[r][c];}
+
+  function buildMatrix(ver,bits,ecl,forceMask){
+    const size=17+ver*4;
+    const m=newMatrix(size);
+    const fn=newMatrix(size); // función (true=reservado/fijo)
+    const setF=(r,c,v)=>{m[r][c]=v;fn[r][c]=1;};
+    // finders + separadores
+    [[0,0],[0,size-7],[size-7,0]].forEach(([r,c])=>{
+      for(let dr=0;dr<7;dr++)for(let dc=0;dc<7;dc++){const ring=(dr===0||dr===6||dc===0||dc===6);const core=(dr>=2&&dr<=4&&dc>=2&&dc<=4);setF(r+dr,c+dc,(ring||core)?1:0);}
+      // separadores
+      for(let i=-1;i<=7;i++){const rs=[r-1,r+7],cs=[c-1,c+7];[[r-1,c+i],[r+7,c+i],[r+i,c-1],[r+i,c+7]].forEach(([rr,cc])=>{if(rr>=0&&cc>=0&&rr<size&&cc<size&&fn[rr][cc]!==1)setF(rr,cc,0);});}
+    });
+    // timing
+    for(let i=8;i<size-8;i++){if(fn[6][i]!==1)setF(6,i,(i%2===0)?1:0);if(fn[i][6]!==1)setF(i,6,(i%2===0)?1:0);}
+    // alignment
+    const ap=ALIGN[ver];
+    for(const r of ap)for(const c of ap){
+      if(fn[r][c]===1)continue; // solapa finder
+      for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const rr=r+dr,cc=c+dc;const ring=(Math.abs(dr)===2||Math.abs(dc)===2);const center=(dr===0&&dc===0);setF(rr,cc,(ring||center)?1:0);}
+    }
+    // dark module
+    setF(size-8,8,1);
+    // reservar áreas de formato
+    for(let i=0;i<=8;i++){if(fn[8][i]!==1)fn[8][i]=1;if(fn[i][8]!==1)fn[i][8]=1;}
+    for(let i=0;i<8;i++){if(fn[8][size-1-i]!==1)fn[8][size-1-i]=1;if(fn[size-1-i][8]!==1)fn[size-1-i][8]=1;}
+    // reservar version info (v>=7)
+    if(ver>=7){for(let i=0;i<6;i++)for(let j=0;j<3;j++){fn[i][size-11+j]=1;fn[size-11+j][i]=1;}}
+
+    // colocar datos (zigzag)
+    let bi=0,dir=-1;
+    for(let col=size-1;col>0;col-=2){
+      if(col===6)col--; // saltar timing
+      for(let i=0;i<size;i++){
+        const row=dir<0?(size-1-i):i;
+        for(let k=0;k<2;k++){
+          const c=col-k;
+          if(fn[row][c]===1)continue;
+          m[row][c]=bi<bits.length?bits[bi]:0; bi++;
+        }
+      }
+      dir=-dir;
+    }
+
+    // máscaras
+    const maskFn=[
+      (r,c)=>((r+c)%2===0),
+      (r,c)=>(r%2===0),
+      (r,c)=>(c%3===0),
+      (r,c)=>((r+c)%3===0),
+      (r,c)=>((Math.floor(r/2)+Math.floor(c/3))%2===0),
+      (r,c)=>(((r*c)%2)+((r*c)%3)===0),
+      (r,c)=>((((r*c)%2)+((r*c)%3))%2===0),
+      (r,c)=>((((r+c)%2)+((r*c)%3))%2===0),
+    ];
+    const eclBits={L:0b01,M:0b00,Q:0b11,H:0b10}[ecl];
+
+    function applyFormat(mat,mask){
+      const data=(eclBits<<3)|mask;
+      let rem=data;
+      for(let i=0;i<10;i++)rem=(rem<<1)^(((rem>>9)&1)?0x537:0);
+      const bitsF=((data<<10)|rem)^0x5412;
+      for(let i=0;i<15;i++){
+        const b=(bitsF>>i)&1;
+        // columna 8 (vertical)
+        if(i<6)mat[i][8]=b;
+        else if(i<8)mat[i+1][8]=b;
+        else mat[size-15+i][8]=b;
+        // fila 8 (horizontal)
+        if(i<8)mat[8][size-1-i]=b;
+        else if(i<9)mat[8][7]=b;
+        else mat[8][14-i]=b;
+      }
+      mat[size-8][8]=1; // dark
+    }
+    function applyVersion(mat){
+      if(ver<7)return;
+      let rem=ver;
+      for(let i=0;i<12;i++)rem=(rem<<1)^(((rem>>11)&1)?0x1f25:0);
+      const bitsV=(ver<<12)|rem;
+      for(let i=0;i<18;i++){const b=(bitsV>>i)&1;const r=Math.floor(i/3),c=i%3;mat[r][size-11+c]=b;mat[size-11+c][r]=b;}
+    }
+
+    function penalty(mat){
+      const n=mat.length;let p=0;
+      // regla 1: corridas
+      const run=(get)=>{let s=0;for(let a=0;a<n;a++){let prev=null,len=0;for(let b=0;b<n;b++){const v=get(a,b);if(v===prev){len++;if(len===5)s+=3;else if(len>5)s+=1;}else{prev=v;len=1;}}}return s;};
+      p+=run((a,b)=>mat[a][b]);p+=run((a,b)=>mat[b][a]);
+      // regla 2: bloques 2x2
+      for(let r=0;r<n-1;r++)for(let c=0;c<n-1;c++){const v=mat[r][c];if(v===mat[r][c+1]&&v===mat[r+1][c]&&v===mat[r+1][c+1])p+=3;}
+      // regla 3: patrón 1011101 con 0000
+      const pat1=[1,0,1,1,1,0,1,0,0,0,0],pat2=[0,0,0,0,1,0,1,1,1,0,1];
+      const check=(get)=>{let s=0;for(let a=0;a<n;a++)for(let b=0;b<=n-11;b++){let m1=true,m2=true;for(let k=0;k<11;k++){const v=get(a,b+k);if(v!==pat1[k])m1=false;if(v!==pat2[k])m2=false;}if(m1)s+=40;if(m2)s+=40;}return s;};
+      p+=check((a,b)=>mat[a][b]);p+=check((a,b)=>mat[b][a]);
+      // regla 4: balance
+      let dark=0;for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(mat[r][c])dark++;
+      const ratio=dark/(n*n)*100;const k=Math.floor(Math.abs(ratio-50)/5);p+=k*10;
+      return p;
+    }
+
+    let best=null,bestP=Infinity,bestMask=0;
+    const masks=(forceMask!=null)?[forceMask]:[0,1,2,3,4,5,6,7];
+    for(const mask of masks){
+      const mat=m.map(row=>row.slice());
+      for(let r=0;r<size;r++)for(let c=0;c<size;c++){if(fn[r][c]!==1 && maskFn[mask](r,c))mat[r][c]^=1;}
+      applyFormat(mat,mask);applyVersion(mat);
+      const p=penalty(mat);
+      if(p<bestP){bestP=p;best=mat;bestMask=mask;}
+    }
+    return {matrix:best,mask:bestMask,size};
+  }
+
+  function encode(text,ecl='M',forceMask=null){
+    ecl=ecl.toUpperCase();
+    const {ver,bits}=buildData(text,ecl);
+    const {matrix,mask,size}=buildMatrix(ver,bits,ecl,forceMask);
+    return {matrix,size,version:ver,mask,ecl};
+  }
+  // SVG vectorial (nítido para impresión), con zona de silencio
+  function svg(text,opts){
+    opts=opts||{};
+    const ecl=opts.ecl||'M', quiet=(opts.quiet!=null?opts.quiet:4), fg=opts.fg||'#12385a', bg=opts.bg||'#ffffff';
+    const q=encode(text,ecl), n=q.size, dim=n+quiet*2;
+    let rects='';
+    for(let r=0;r<n;r++){let c=0;while(c<n){ if(q.matrix[r][c]){let w=1;while(c+w<n&&q.matrix[r][c+w])w++;rects+='<rect x="'+(c+quiet)+'" y="'+(r+quiet)+'" width="'+w+'" height="1"/>';c+=w;}else c++; }}
+    const px=opts.px||132;
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="'+px+'" height="'+px+'" viewBox="0 0 '+dim+' '+dim+'" shape-rendering="crispEdges" role="img" aria-label="Código QR de verificación">'
+      +'<rect width="'+dim+'" height="'+dim+'" fill="'+bg+'"/><g fill="'+fg+'">'+rects+'</g></svg>';
+  }
+  return {encode,svg};
+})();
+
+/* ============================================================
+   CONSTANCIA — se emite al finalizar con ≥80% (competente)
+   ============================================================ */
+function folioConstancia(fecha){
+  const d=(fecha||"").replace(/-/g,"")||new Date().toISOString().slice(0,10).replace(/-/g,"");
+  const r=Math.random().toString(36).slice(2,6).toUpperCase();
+  return "EDUVESA-NRP9-"+d+"-"+r;
+}
+function fechaLarga(iso){
+  const d=iso?new Date(iso+"T00:00:00"):new Date();
+  return d.toLocaleDateString("es-MX",{year:"numeric",month:"long",day:"numeric"});
+}
+function generarConstancia(){
+  const card=document.getElementById("evalcard");
+  if(!card || card.dataset.competente!=="1"){
+    alert("La constancia solo se emite cuando la evaluación finaliza como COMPETENTE: ≥ 80 % de aciertos y todas las acciones críticas superadas.");
+    return;
+  }
+  const g=id=>{const e=document.getElementById(id);return e?(e.value||"").trim():"";};
+  const part=g("ev_part")||"__________________________";
+  const rol=g("ev_rol")||"Participante";
+  const evalr=g("ev_eval")||"Instructor NRP";
+  const fechaISO=g("ev_fecha");
+  const pct=card.dataset.pct||"—";
+  const folio=folioConstancia(fechaISO);
+  const esc=ULTIMO.p.label+" · RN "+ULTIMO.ga+" semanas";
+
+  // Payload de verificación (autodescriptivo + folio). QR vectorial sin dependencias.
+  const partQR=(part.length>36?part.slice(0,36):part);
+  let payload="EDUVESA·NRP9 | Folio:"+folio+" | "+partQR+" | Competente "+pct+"% | "+fechaLarga(fechaISO);
+  let qrSVG="";
+  try{ qrSVG=QRGEN.svg(payload,{ecl:"L",fg:"#12385a",px:120}); }
+  catch(e){ try{ qrSVG=QRGEN.svg("EDUVESA·NRP9 Folio:"+folio+" "+pct+"%",{ecl:"L",fg:"#12385a",px:120}); }catch(_){ qrSVG=""; } }
+
+  let view=document.getElementById("certView");
+  if(view) view.remove();
+  view=document.createElement("div");
+  view.id="certView";
+  view.innerHTML=`
+    <div class="cert-actions">
+      <button class="p" onclick="window.print()">🖨 Imprimir / PDF</button>
+      <button class="p2" onclick="constanciaNuevaPestana()">🗔 Abrir para imprimir</button>
+      <button class="c" onclick="cerrarConstancia()">✕ Cerrar</button>
+    </div>
+    <div class="cert-hint">Para imprimir se usa el diálogo del navegador (elige “Guardar como PDF” o una impresora). Si el botón no abre nada, es porque la vista previa dentro de Claude bloquea la impresión: usa <b>“Abrir para imprimir”</b>, o abre el archivo en tu navegador o en GitHub Pages.</div>
+    <div class="cert" id="certDoc">
+      <div class="cert-band"></div>
+      <div class="cert-frame">
+        <div class="cert-brand">
+          <div class="m"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-5 3 10 2-7 2 4h6"/></svg></div>
+          <div class="bt"><div class="b1">EDUVESA · Resuscitation Solutions</div><div class="b2">Centro de Entrenamiento AHA</div></div>
+        </div>
+        <div class="kick">Constancia de desempeño satisfactorio</div>
+        <h1>Simulación de Reanimación Neonatal</h1>
+        <div class="namewrap"><div class="lead">Se otorga la presente a</div>
+        <div class="name">${part}</div></div>
+        <p class="body">Por haber completado satisfactoriamente el escenario de simulación
+        <b>${esc}</b>, conforme al algoritmo del <b>Programa de Reanimación Neonatal (NRP) 9.ª edición</b> (AAP/AHA),
+        desempeñándose como <b>${rol}</b> y alcanzando un resultado de
+        <br><span class="scorebadge">Competente · ${pct}% de aciertos</span><br>
+        con todas las acciones críticas de desempeño superadas.</p>
+
+        <div class="cert-sign">
+          <div class="sig"><div class="line"></div><div class="who">${part}</div><div class="role">Participante</div></div>
+          <div class="sig"><div class="line"></div><div class="who">${evalr}</div><div class="role">Instructor evaluador</div></div>
+        </div>
+
+        <div class="cert-bottom">
+          <div class="cert-verify">
+            <div class="qr">${qrSVG}</div>
+            <div class="vtxt"><b>Verificación</b><br>Escanee el código<br>Folio ${folio}</div>
+          </div>
+          <div class="cert-seal">Desempeño<br>satisfactorio<br>NRP 9.ª ed.</div>
+        </div>
+
+        <div class="cert-foot">
+          <span>Folio: <b>${folio}</b></span>
+          <span>Guadalajara, Jalisco · ${fechaLarga(fechaISO)}</span>
+        </div>
+        <div style="font-size:.6rem;color:var(--muted);margin-top:10px;text-align:center">
+          Documento de verificación interna de competencia por simulación. El NRP no es un curso de certificación; el estatus de proveedor se obtiene y mantiene según la normativa vigente de la AAP/AHA.
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(view);
+  document.body.classList.add("cert-open");
+}
+function cerrarConstancia(){
+  const v=document.getElementById("certView"); if(v)v.remove();
+  document.body.classList.remove("cert-open");
+}
+function constanciaNuevaPestana(){
+  const doc=document.getElementById("certDoc"); if(!doc)return;
+  const estilos=[...document.querySelectorAll("style")].map(s=>s.outerHTML).join("");
+  const html='<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Constancia EDUVESA</title>'+estilos+
+    '</head><body style="background:#fff;margin:0;padding:22px;display:flex;justify-content:center">'+doc.outerHTML+
+    '<script>window.onload=function(){setTimeout(function(){try{window.print();}catch(e){}},400);};<\/script></body></html>';
+  let w=null;
+  try{ w=window.open("","_blank"); }catch(e){ w=null; }
+  if(w && w.document){ w.document.open(); w.document.write(html); w.document.close(); return; }
+  // fallback por Blob si window.open está bloqueado
+  try{
+    const blob=new Blob([html],{type:"text/html"}); const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+  }catch(e){
+    alert("Tu entorno bloquea abrir ventanas nuevas. Descarga el archivo HTML y ábrelo en tu navegador (o publícalo en GitHub Pages) para imprimir la constancia.");
+  }
+}
+
+/* ============================================================
+   SIMULACIÓN EN VIVO — monitor de signos vitales + cronómetro
+   Sigue la secuencia de estados del escenario (algoritmo NRP 9.ª ed.)
+   ============================================================ */
+let SIM={estados:[],clocks:[],idx:0,seconds:0,timerId:null,raf:null,running:false,auto:false,buf:[],phase:0,hr:null,spo2:null,zone:"neutral",last:0,
+  hrCur:null,spo2Cur:null,hrTgt:null,spo2Tgt:null,_hrShown:null,_spo2Shown:null};
+
+function algoFor(endpoint,i){
+  const T={
+    rutina:["Nacimiento · pasos iniciales con la madre","¿Término? ¿Buen tono? ¿Respira/llora? → SÍ · piel con piel","Atención de rutina · evaluación continua","Atención de rutina"],
+    defecto:["Nacimiento · pasos iniciales","Identificar defecto · manejo especial y protección","Estabilización · SOG/termorregulación · traslado","Traslado a centro de referencia"],
+    pasosIniciales:["Nacimiento · pasos iniciales · evaluación rápida","Evaluación de vía aérea / respiración","Vía aérea permeable · O₂ titulado","Cuidados posreanimación"],
+    cpap:["Nacimiento · pasos iniciales","¿Dificultad resp./cianosis? → pulsioxímetro","CPAP · O₂ titulado por SpO₂","Cuidados posreanimación"],
+    vpp:["Nacimiento · pasos iniciales","Administrar ventilaciones · pulsioxímetro","VPP efectiva · reevaluar FC","Cuidados posreanimación"],
+    mrsopa:["Nacimiento · pasos iniciales","VPP","Acciones correctivas (MR SOPA) · vía aérea alterna","Cuidados posreanimación"],
+    obstruido:["Nacimiento · pasos iniciales","VPP · MR SOPA","Vía aérea alterna · aspiración traqueal","Cuidados posreanimación"],
+    intubacion:["Nacimiento · pasos iniciales","VPP","Intubación / mascarilla laríngea","Cuidados posreanimación"],
+    compresiones:["Nacimiento · pasos iniciales","VPP · MR SOPA","FC<60 → compresiones 3:1 · O₂ 100% · CVU","FC>60 → continuar ventilación"],
+    medicacion:["VPP · vía aérea alterna","FC<60 → compresiones 3:1","Adrenalina CVU/IO · considerar volumen","FC>60 → cuidados posreanimación"],
+    reconoceCC:["Nacimiento · pasos iniciales","Cianosis persistente → pulsioxímetro","Reconocer cardiopatía · evitar hiperoxia","Cuidados posreanimación · traslado"]
+  };
+  return (T[endpoint]||T.vpp)[Math.min(i,3)];
+}
+function clkSec(c){ if(!c||c==="—")return 0; const[m,s]=c.split(":").map(Number); return m*60+(s||0); }
+function num(v){ return (v==="—"||v==null)?null:Number(v); }
+
+function abrirSim(){
+  const slot=document.getElementById("simSlot");
+  if(slot.dataset.open==="1"){ cerrarSim(); return; }
+  const estados=ULTIMO.estados.filter(s=>!s.alt);
+  SIM.estados=estados;
+  SIM.clocks=estados.map(s=>clkSec(s.clock));
+  SIM.idx=0; SIM.seconds=0; SIM.running=false; SIM.auto=false; SIM.buf=[]; SIM.phase=0; SIM.last=0;
+  SIM.m2={on:false,mode:"ductal",delta:10,buf:[],phase:0,_hr:null,_sp:null};
+
+  slot.innerHTML=`
+  <div class="sim" id="simcard">
+    <div class="sim-top">
+      <div><div class="lbl">Monitor de signos vitales · NRP 9.ª ed.</div>
+      <div class="algo" id="sim_algo"></div></div>
+      <button class="x" onclick="cerrarSim()">✕ Cerrar</button>
+    </div>
+    <div class="sim-grid">
+      <div class="scope">
+        <canvas id="sim_canvas"></canvas>
+        <div class="clk"><span id="sim_clk">0:00</span><small id="sim_clklbl">tiempo de reanimación</small></div>
+        <div class="phase" id="sim_phase"></div>
+      </div>
+      <div class="vitals">
+        <div class="vrow"><span class="vl hr">FC · lpm</span><span class="vv" id="sim_hr">--</span></div>
+        <div class="vrow"><span class="vl spo2">SpO₂ preductal</span><span class="vv spo2c" id="sim_spo2">--<span id="sim_meta"></span></span></div>
+        <div class="vrow small"><span class="vl etc">Esfuerzo · tono · color</span><span class="vv neutral" id="sim_etc"></span></div>
+      </div>
+    </div>
+    <div class="sim-ctrl">
+      <button class="sc-play" id="sim_play" onclick="simPlay()">▶ Iniciar</button>
+      <button class="sc-reset" onclick="simResetTimer()">⟲ Reiniciar reloj</button>
+      <button class="sc-nav" id="sim_prev" onclick="simPrev()">◀ Estado</button>
+      <span class="pos" id="sim_pos"></span>
+      <button class="sc-nav" id="sim_next" onclick="simNext()">Estado ▶</button>
+      <label class="auto"><input type="checkbox" id="sim_auto" onchange="SIM.auto=this.checked"> avance auto por reloj</label>
+      <label class="auto"><input type="checkbox" id="sim_m2chk" onchange="toggleM2(this.checked)"> 2.º monitor (truco)</label>
+    </div>
+    <div class="sim-action">
+      <div class="h">Acción esperada del equipo</div>
+      <div class="a" id="sim_act"></div>
+      <div class="trg" id="sim_trg"></div>
+    </div>
+    <div id="sim_m2wrap" style="display:none">
+      <div class="m2-ctrl">
+        <span class="m2-lbl">Escenario truco:</span>
+        <select id="sim_m2mode" onchange="setM2Mode(this.value)">
+          <option value="ductal">Diferencial pre/postductal (cardiopatía)</option>
+          <option value="aesp">AESP · monitor con FC sin pulso</option>
+          <option value="concord">Concordante (control, sin truco)</option>
+        </select>
+        <label class="m2-delta" id="sim_m2deltaWrap">Δ SpO₂
+          <input type="range" id="sim_m2delta" min="0" max="25" value="10" oninput="SIM.m2.delta=+this.value;document.getElementById('sim_m2dv').textContent=this.value+'%'">
+          <b id="sim_m2dv">10%</b>
+        </label>
+      </div>
+      <div class="sim-grid m2-grid">
+        <div class="scope">
+          <canvas id="sim_canvas2"></canvas>
+          <div class="clk2">Monitor 2 · <span id="sim_m2site">post-ductal (pie izq.)</span></div>
+        </div>
+        <div class="vitals">
+          <div class="vrow"><span class="vl hr">FC · lpm</span><span class="vv" id="sim_hr2">--</span></div>
+          <div class="vrow"><span class="vl spo2">SpO₂ post-ductal</span><span class="vv spo2c" id="sim_spo2_2">--</span></div>
+        </div>
+      </div>
+      <div class="m2-banner" id="sim_m2banner"></div>
+    </div>
+    <div class="mets">
+      <div class="met">
+        <div class="mh">🫁 Metrónomo de ventilación (VPP)</div>
+        <div class="mrow">
+          <button class="mbtn" id="met_vbtn" onclick="metVent()">▶</button>
+          <span class="mbeat" id="met_vbeat">Ventila</span>
+          <input type="range" id="met_vrate" min="30" max="60" value="40" oninput="metVentRate(+this.value)">
+          <span class="mrate"><b id="met_vval">40</b>/min</span>
+        </div>
+        <div class="mhint">NRP 9.ª ed.: 30–60 vent/min · cadencia "Ventila–dos–tres".</div>
+      </div>
+      <div class="met" id="met_cwrap">
+        <div class="mh">🫀 Metrónomo de compresiones 3:1</div>
+        <div class="mrow">
+          <button class="mbtn" id="met_cbtn" onclick="metComp()">▶</button>
+          <span class="mbeat" id="met_cbeat">1</span>
+          <span class="mrate">90 compresiones + 30 ventilaciones/min</span>
+        </div>
+        <div class="mhint" id="met_chint">Cadencia "1–2–3–Ventila" (3:1). Úsalo cuando la FC &lt;60 tras VPP efectiva.</div>
+      </div>
+    </div>
+  </div>`;
+  slot.dataset.open="1";
+
+  const cv=document.getElementById("sim_canvas");
+  cv.width=cv.parentElement.clientWidth; cv.height=190;
+  SIM.buf=new Array(cv.width).fill(0.0);
+  simRender(true);
+  const clkl=document.getElementById("sim_clklbl"); if(clkl)clkl.textContent=ULTIMO.postnatal?"tiempo desde la llamada":"tiempo de reanimación";
+  if(ULTIMO.p.endpoint==="compresiones"||ULTIMO.p.endpoint==="medicacion"){
+    const w=document.getElementById("met_cwrap"); if(w)w.classList.add("req");
+    const h=document.getElementById("met_chint"); if(h)h.textContent="⚠ Este escenario requiere compresiones torácicas (FC <60 pese a VPP efectiva).";
+  }
+  SIM.last=performance.now();
+  SIM.raf=requestAnimationFrame(drawMonitor);
+  document.getElementById("simcard").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function cerrarSim(){
+  simTeardown();
+  const slot=document.getElementById("simSlot");
+  if(slot){ slot.innerHTML=""; slot.dataset.open="0"; }
+}
+function simTeardown(){
+  if(SIM.timerId){clearInterval(SIM.timerId);SIM.timerId=null;}
+  if(SIM.raf){cancelAnimationFrame(SIM.raf);SIM.raf=null;}
+  SIM.running=false;
+  metStopAll();
+}
+
+/* ============================================================
+   METRÓNOMOS (Web Audio) — ventilación y compresiones 3:1
+   ============================================================ */
+let MET={ac:null,vent:{on:false,rate:40,timer:null,i:0},comp:{on:false,timer:null,i:0}};
+function metAC(){ if(!MET.ac){const AC=window.AudioContext||window.webkitAudioContext; MET.ac=new AC();} if(MET.ac.state==="suspended")MET.ac.resume(); return MET.ac; }
+function metTone(freq,dur,gain,type){
+  const ac=metAC(); const o=ac.createOscillator(), g=ac.createGain();
+  o.type=type||"sine"; o.frequency.value=freq; o.connect(g); g.connect(ac.destination);
+  const t=ac.currentTime;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(gain||0.25,t+0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.start(t); o.stop(t+dur+0.02);
+}
+function flash(id){const e=document.getElementById(id);if(!e)return;e.classList.remove("flash");void e.offsetWidth;e.classList.add("flash");}
+
+function metVent(){
+  const b=document.getElementById("met_vbtn");
+  if(MET.vent.on){ clearInterval(MET.vent.timer); MET.vent.on=false; b.textContent="▶"; b.classList.remove("on"); return; }
+  metAC(); MET.vent.on=true; MET.vent.i=0; b.textContent="⏸"; b.classList.add("on");
+  const step=()=>{
+    const idx=MET.vent.i%3;
+    if(idx===0) metTone(720,0.13,0.30,"sine");   // "Ventila" (apretar)
+    else metTone(430,0.05,0.12,"sine");           // "dos","tres"
+    const be=document.getElementById("met_vbeat"); if(be){be.textContent=["Ventila","dos","tres"][idx];flash("met_vbeat");}
+    MET.vent.i++;
+  };
+  step();
+  MET.vent.timer=setInterval(step,(60000/MET.vent.rate)/3); // 3 tiempos por ventilación
+}
+function metVentRate(r){
+  MET.vent.rate=r; document.getElementById("met_vval").textContent=r;
+  if(MET.vent.on){ clearInterval(MET.vent.timer); MET.vent.timer=setInterval(()=>{
+    const idx=MET.vent.i%3;
+    if(idx===0) metTone(720,0.13,0.30,"sine"); else metTone(430,0.05,0.12,"sine");
+    const be=document.getElementById("met_vbeat"); if(be){be.textContent=["Ventila","dos","tres"][idx];flash("met_vbeat");}
+    MET.vent.i++;
+  },(60000/MET.vent.rate)/3); }
+}
+function metComp(){
+  const b=document.getElementById("met_cbtn");
+  if(MET.comp.on){ clearInterval(MET.comp.timer); MET.comp.on=false; b.textContent="▶"; b.classList.remove("on"); return; }
+  metAC(); MET.comp.on=true; MET.comp.i=0; b.textContent="⏸"; b.classList.add("on");
+  const step=()=>{
+    const idx=MET.comp.i%4;             // 3 compresiones + 1 ventilación cada 2 s
+    if(idx<3) metTone(900,0.05,0.28,"square");      // compresión
+    else metTone(520,0.14,0.30,"sine");             // ventilación
+    const be=document.getElementById("met_cbeat"); if(be){be.textContent=["1","2","3","Ventila"][idx];flash("met_cbeat");}
+    MET.comp.i++;
+  };
+  step();
+  MET.comp.timer=setInterval(step,500);  // 120 eventos/min → 90 compresiones + 30 ventilaciones
+}
+function metStopAll(){
+  if(MET.vent.timer){clearInterval(MET.vent.timer);MET.vent.timer=null;} MET.vent.on=false;
+  if(MET.comp.timer){clearInterval(MET.comp.timer);MET.comp.timer=null;} MET.comp.on=false;
+}
+
+function simRender(snap){
+  const s=SIM.estados[SIM.idx]; if(!s)return;
+  // objetivos de interpolación
+  SIM.hrTgt=num(s.hr); SIM.spo2Tgt=num(s.spo2);
+  if(snap){ SIM.hrCur=SIM.hrTgt; SIM.spo2Cur=SIM.spo2Tgt; }
+  const ep=ULTIMO.p.endpoint;
+  document.getElementById("sim_algo").textContent=(ULTIMO.postnatal && SIM.idx===0)
+    ? "Llamada de urgencia · pedir ayuda · evaluación ABC"
+    : algoFor(ep,SIM.idx);
+  document.getElementById("sim_phase").textContent=s.fase;
+  // filas estáticas
+  document.getElementById("sim_etc").textContent=s.fr+" · "+s.tono+" · "+s.color;
+  document.getElementById("sim_act").textContent=s.accion;
+  document.getElementById("sim_trg").textContent="→ "+s.disparador;
+  document.getElementById("sim_pos").textContent="Estado "+(SIM.idx+1)+"/"+SIM.estados.length;
+  document.getElementById("sim_prev").disabled=(SIM.idx===0);
+  document.getElementById("sim_next").disabled=(SIM.idx===SIM.estados.length-1);
+  paintVitals(true);
+}
+
+// Pinta FC/SpO2 con los valores interpolados actuales (llamado cada frame)
+function paintVitals(force){
+  const hrEl=document.getElementById("sim_hr"); if(!hrEl)return;
+  const hrV=(SIM.hrCur==null)?null:Math.round(SIM.hrCur);
+  if(force||hrV!==SIM._hrShown){
+    SIM._hrShown=hrV;
+    hrEl.textContent=(hrV==null)?"--":hrV;
+    hrEl.className="vv "+(hrV==null?"neutral":clsHR(hrV));
+  }
+  const spEl=document.getElementById("sim_spo2");
+  const minuto=Math.max(2,Math.floor(SIM.seconds/60)||2);
+  const spV=(SIM.spo2Cur==null)?null:Math.round(SIM.spo2Cur);
+  const key=spV+"|"+minuto;
+  if(force||key!==SIM._spo2Shown){
+    SIM._spo2Shown=key;
+    const meta='<span class="metachip">meta '+metaSpo2(minuto)+'</span>';
+    spEl.innerHTML=(spV==null?"--":spV+"<small>%</small>")+meta;
+    spEl.className="vv "+((spV==null)?"neutral":(clsSpo2(spV,minuto)==="ok"?"ok":"warn"));
+  }
+}
+
+function simPlay(){
+  const b=document.getElementById("sim_play");
+  if(SIM.running){ clearInterval(SIM.timerId); SIM.timerId=null; SIM.running=false; b.className="sc-play"; b.textContent="▶ Reanudar"; return; }
+  SIM.running=true; b.className="sc-pause"; b.textContent="⏸ Pausar";
+  SIM.timerId=setInterval(simTick,1000);
+}
+function simTick(){
+  SIM.seconds++;
+  const m=Math.floor(SIM.seconds/60), s=SIM.seconds%60;
+  document.getElementById("sim_clk").textContent=m+":"+String(s).padStart(2,"0");
+  // actualizar meta de SpO2 al cambiar de minuto
+  if(SIM.seconds%60===0) paintVitals(true);
+  // avance automático por reloj
+  if(SIM.auto && SIM.idx<SIM.estados.length-1 && SIM.seconds>=SIM.clocks[SIM.idx+1]){
+    SIM.idx++; simRender();
+  }
+}
+function simResetTimer(){
+  SIM.seconds=0; SIM.idx=0;
+  document.getElementById("sim_clk").textContent="0:00";
+  if(SIM.timerId){clearInterval(SIM.timerId);SIM.timerId=null;}
+  SIM.running=false;
+  const b=document.getElementById("sim_play"); b.className="sc-play"; b.textContent="▶ Iniciar";
+  simRender(true);
+}
+function simNext(){ if(SIM.idx<SIM.estados.length-1){SIM.idx++; SIM.seconds=Math.max(SIM.seconds,SIM.clocks[SIM.idx]); document.getElementById("sim_clk").textContent=Math.floor(SIM.seconds/60)+":"+String(SIM.seconds%60).padStart(2,"0"); simRender();} }
+function simPrev(){ if(SIM.idx>0){SIM.idx--; simRender();} }
+
+/* animación del monitor: ECG (zona de color) + pletismografía (cian) */
+function ecgWave(f){
+  let y=0;
+  y+=0.10*Math.exp(-Math.pow((f-0.15)/0.030,2)); // P
+  y-=0.05*Math.exp(-Math.pow((f-0.205)/0.012,2)); // Q
+  y+=1.00*Math.exp(-Math.pow((f-0.235)/0.011,2)); // R
+  y-=0.16*Math.exp(-Math.pow((f-0.275)/0.018,2)); // S
+  y+=0.22*Math.exp(-Math.pow((f-0.520)/0.060,2)); // T
+  return y;
+}
+function plethWave(f){
+  // subida rápida, bajada con muesca dicrótica
+  let up=Math.exp(-Math.pow((f-0.16)/0.11,2));
+  let notch=0.28*Math.exp(-Math.pow((f-0.48)/0.10,2));
+  return Math.min(1,up+notch);
+}
+function toggleM2(on){
+  SIM.m2.on=on;
+  const wrap=document.getElementById("sim_m2wrap");
+  wrap.style.display=on?"block":"none";
+  if(on){
+    const cv=document.getElementById("sim_canvas2");
+    cv.width=cv.parentElement.clientWidth; cv.height=150;
+    SIM.m2.buf=new Array(cv.width).fill(0.0); SIM.m2.phase=0; SIM.m2._hr=null; SIM.m2._sp=null;
+    setM2Mode(document.getElementById("sim_m2mode").value);
+    wrap.scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+}
+function setM2Mode(mode){
+  SIM.m2.mode=mode; SIM.m2._hr=null; SIM.m2._sp=null;
+  document.getElementById("sim_m2deltaWrap").style.display=(mode==="ductal")?"inline-flex":"none";
+  document.getElementById("sim_m2site").textContent=(mode==="aesp")?"pulso / auscultación":"post-ductal (pie izq.)";
+}
+
+function drawMonitor(now){
+  const cv=document.getElementById("sim_canvas");
+  if(!cv){ SIM.raf=null; return; }
+  const ctx=cv.getContext("2d");
+  const W=cv.width, H=cv.height;
+  const dt=Math.min(0.05,(now-SIM.last)/1000); SIM.last=now;
+
+  // ---- interpolación suave hacia los objetivos del estado ----
+  const tau=0.85;                 // constante de tiempo del glide (s)
+  const k=1-Math.exp(-dt/tau);
+  // FC
+  if(SIM.hrTgt==null){ SIM.hrCur=null; }
+  else if(SIM.hrCur==null){ SIM.hrCur=SIM.hrTgt; }
+  else { SIM.hrCur+=(SIM.hrTgt-SIM.hrCur)*k; if(Math.abs(SIM.hrTgt-SIM.hrCur)<0.3)SIM.hrCur=SIM.hrTgt; }
+  // SpO2
+  if(SIM.spo2Tgt==null){ SIM.spo2Cur=null; }
+  else if(SIM.spo2Cur==null){ SIM.spo2Cur=SIM.spo2Tgt; }
+  else { SIM.spo2Cur+=(SIM.spo2Tgt-SIM.spo2Cur)*k; if(Math.abs(SIM.spo2Tgt-SIM.spo2Cur)<0.3)SIM.spo2Cur=SIM.spo2Tgt; }
+  paintVitals(false);
+
+  const scroll=110; // px/s
+  const nNew=Math.max(1,Math.round(scroll*dt));
+  const hz=(SIM.hrCur!=null && SIM.hrCur>0)?SIM.hrCur/60:0;   // el ECG acelera/desacelera con la FC interpolada
+  for(let i=0;i<nNew;i++){
+    SIM.phase+=hz*(1/scroll);
+    if(SIM.phase>=1)SIM.phase-=1;
+    const f=SIM.phase;
+    if(SIM.hrCur==null){ SIM.buf.push([0.02*Math.sin(now/120+i),null]); }
+    else{ SIM.buf.push([ecgWave(f), (SIM.spo2Cur!=null?plethWave(f):null)]); }
+  }
+  while(SIM.buf.length>W) SIM.buf.shift();
+
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle="rgba(80,140,160,.10)"; ctx.lineWidth=1;
+  for(let x=0;x<W;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  const zone=(SIM.hrCur==null)?"neutral":clsHR(Math.round(SIM.hrCur));
+  const zoneColor={crit:"#ff6b5e",warn:"#ffc14d",ok:"#57e08a",neutral:"#7f9aa6"}[zone]||"#57e08a";
+  const baseECG=H*0.40, ampECG=H*0.30;
+  const basePleth=H*0.86, ampPleth=H*0.20;
+
+  ctx.beginPath(); ctx.strokeStyle=zoneColor; ctx.lineWidth=2;
+  SIM.buf.forEach((p,x)=>{ const y=baseECG-p[0]*ampECG; x?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+  ctx.stroke();
+
+  if(SIM.spo2Cur!=null && SIM.hrCur!=null){
+    ctx.beginPath(); ctx.strokeStyle="#7fd0ff"; ctx.lineWidth=1.6;
+    SIM.buf.forEach((p,x)=>{ if(p[1]==null)return; const y=basePleth-p[1]*ampPleth; x?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+    ctx.stroke();
+  }
+
+  // ---- Segundo monitor (escenario truco) ----
+  if(SIM.m2 && SIM.m2.on){
+    const cv2=document.getElementById("sim_canvas2");
+    if(cv2){
+      const ctx2=cv2.getContext("2d"), W2=cv2.width, H2=cv2.height;
+      // derivar valores del monitor 2 según el modo
+      let hr2,spo2_2,banner,bcls;
+      if(SIM.m2.mode==="aesp"){
+        hr2=null; spo2_2=null; // dispositivo de pulso: sin señal
+        banner="⚠ El monitor 1 muestra FC eléctrica pero NO hay pulso — confirmar por auscultación (AESP)";
+        bcls="crit";
+      } else {
+        hr2=SIM.hrCur;
+        const d=(SIM.m2.mode==="ductal")?(SIM.m2.delta||0):0;
+        spo2_2=(SIM.spo2Cur==null)?null:Math.max(0,SIM.spo2Cur-d);
+        banner=(SIM.m2.mode==="ductal")
+          ?("Diferencial pre/postductal ≈ "+d+"% — sospechar cardiopatía ductus-dependiente")
+          :"Post-ductal concordante con pre-ductal (control, sin truco)";
+        bcls=(SIM.m2.mode==="ductal" && d>=5)?"warn":"ok";
+      }
+      // avanzar buffer 2
+      const nNew2=Math.max(1,Math.round(110*dt));
+      const hz2=(hr2!=null&&hr2>0)?hr2/60:0;
+      for(let i=0;i<nNew2;i++){
+        SIM.m2.phase+=hz2*(1/110); if(SIM.m2.phase>=1)SIM.m2.phase-=1; const f=SIM.m2.phase;
+        if(hr2==null)SIM.m2.buf.push([0.02*Math.sin(now/120+i),null]);
+        else SIM.m2.buf.push([ecgWave(f),(spo2_2!=null?plethWave(f):null)]);
+      }
+      while(SIM.m2.buf.length>W2)SIM.m2.buf.shift();
+      // pintar
+      ctx2.clearRect(0,0,W2,H2);
+      ctx2.strokeStyle="rgba(80,140,160,.10)";ctx2.lineWidth=1;
+      for(let x=0;x<W2;x+=28){ctx2.beginPath();ctx2.moveTo(x,0);ctx2.lineTo(x,H2);ctx2.stroke();}
+      for(let y=0;y<H2;y+=28){ctx2.beginPath();ctx2.moveTo(0,y);ctx2.lineTo(W2,y);ctx2.stroke();}
+      const z2=(hr2==null)?"neutral":clsHR(Math.round(hr2));
+      const col2={crit:"#ff6b5e",warn:"#ffc14d",ok:"#57e08a",neutral:"#7f9aa6"}[z2];
+      const b1=H2*0.42,a1=H2*0.30,b2=H2*0.86,a2=H2*0.20;
+      ctx2.beginPath();ctx2.strokeStyle=col2;ctx2.lineWidth=2;
+      SIM.m2.buf.forEach((p,x)=>{const y=b1-p[0]*a1;x?ctx2.lineTo(x,y):ctx2.moveTo(x,y);});ctx2.stroke();
+      if(spo2_2!=null && hr2!=null){
+        ctx2.beginPath();ctx2.strokeStyle="#7fd0ff";ctx2.lineWidth=1.5;
+        SIM.m2.buf.forEach((p,x)=>{if(p[1]==null)return;const y=b2-p[1]*a2;x?ctx2.lineTo(x,y):ctx2.moveTo(x,y);});ctx2.stroke();
+      }
+      // números
+      const hrV=(hr2==null)?null:Math.round(hr2), spV=(spo2_2==null)?null:Math.round(spo2_2);
+      if(hrV!==SIM.m2._hr){SIM.m2._hr=hrV;const e=document.getElementById("sim_hr2");if(e){e.textContent=(hrV==null)?"--":hrV;e.className="vv "+(hrV==null?"neutral":clsHR(hrV));}}
+      const minuto=Math.max(2,Math.floor(SIM.seconds/60)||2);
+      if(spV!==SIM.m2._sp){SIM.m2._sp=spV;const e=document.getElementById("sim_spo2_2");if(e){e.textContent=(spV==null)?"--":spV+"%";e.className="vv "+((spV==null)?"neutral":(clsSpo2(spV,minuto)==="ok"?"ok":"warn"));}}
+      const bn=document.getElementById("sim_m2banner");
+      if(bn){bn.textContent=banner;bn.className="m2-banner "+bcls;}
+    }
+  }
+
+  SIM.raf=requestAnimationFrame(drawMonitor);
+}
+
+/* ============================================================
+   RESET / NUEVO ESCENARIO
+   ============================================================ */
+function nuevoEscenario(){
+  simTeardown();
+  cerrarConstancia();
+  ULTIMO=null;
+  document.getElementById("out").innerHTML=
+    '<div class="empty">'+
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>'+
+    '<h3>Configura las variables y genera un nuevo escenario</h3>'+
+    '<p>Ajusta la edad gestacional, el problema y los factores de riesgo, y pulsa “Generar escenario”. También puedes usar 🎲 para una combinación aleatoria.</p></div>';
+  document.getElementById("form").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* init */
+initGA();
+poblarProblemas();
+initRiesgos();
+</script>
+</body>
+</html>
