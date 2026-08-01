@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#12385a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>NRP Escenarios Remoto V2.0 · EDUVESA</title>
+  <link rel="manifest" href="./manifest-remote.webmanifest">
+  <link rel="icon" href="./icon-remote.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-remote.svg">
+  <link rel="stylesheet" href="./remote.css?v=2.0">
+</head>
+<body>
+  <section id="roleScreen" class="role-screen">
+    <header class="landing-header">
+      <div class="brand-mark">NRP</div>
+      <div>
+        <p class="eyebrow">EDUVESA · COPILOTO PARA INSTRUCTORES</p>
+        <h1>Generador de escenarios NRP con control remoto</h1>
+        <p class="lead">Conserva el generador NRP original y permite controlar la simulación en vivo desde un segundo celular, tableta o computadora.</p>
+      </div>
+    </header>
+
+    <main class="landing-main">
+      <div class="role-grid" aria-label="Seleccionar modo de uso">
+        <button id="chooseMonitor" class="role-card primary" type="button">
+          <span class="role-icon" aria-hidden="true">🖥️</span>
+          <strong>Monitor y generador</strong>
+          <span>Genera el escenario, abre la simulación en vivo y crea un código para el instructor remoto.</span>
+        </button>
+        <button id="chooseInstructor" class="role-card" type="button">
+          <span class="role-icon" aria-hidden="true">🎛️</span>
+          <strong>Instructor remoto</strong>
+          <span>Conéctate con el código NRP-XXXXXX para modificar la evolución del caso desde otro dispositivo.</span>
+        </button>
+        <button id="chooseLocal" class="role-card" type="button">
+          <span class="role-icon" aria-hidden="true">🧑‍🏫</span>
+          <strong>Uso local</strong>
+          <span>Abre el generador original sin conexión remota para preparar escenarios, imprimirlos o evaluarlos.</span>
+        </button>
+      </div>
+
+      <section class="feature-grid" aria-label="Funciones incluidas">
+        <article><b>Generador original</b><span>Sexo, edad gestacional, líquido, riesgos, problema, nivel y vía de nacimiento.</span></article>
+        <article><b>Control del estado</b><span>Avanzar, retroceder, iniciar, pausar, reiniciar y activar avance automático.</span></article>
+        <article><b>Variables remotas</b><span>Modificar FC y SpO₂, mostrar eventos y manejar el segundo monitor de simulación.</span></article>
+        <article><b>Instalable</b><span>Acceso como aplicación web en celular, tableta, Windows y Mac.</span></article>
+      </section>
+    </main>
+  </section>
+
+  <section id="monitorScreen" class="app-screen hidden" aria-label="Monitor del generador">
+    <header class="app-bar">
+      <div class="app-brand"><span>NRP</span><div><b>Monitor y generador</b><small>EDUVESA · V2.0</small></div></div>
+      <div class="app-actions">
+        <span id="monitorConnectionStatus" class="status-badge neutral">Sin sesión</span>
+        <div class="room-chip"><small>Código</small><strong id="monitorRoomCode">—</strong></div>
+        <button id="createRoomBtn" class="button primary" type="button">Crear sesión remota</button>
+        <button id="shareRoomBtn" class="button" type="button" disabled>Compartir enlace</button>
+        <button id="installAppBtn" class="button" type="button">Instalar</button>
+        <button id="backFromMonitor" class="icon-button" type="button" aria-label="Volver al inicio">×</button>
+      </div>
+    </header>
+    <div id="monitorAlert" class="monitor-alert hidden" role="status"></div>
+    <iframe id="generatorFrame" title="Generador de escenarios NRP" src="about:blank"></iframe>
+  </section>
+
+  <section id="instructorScreen" class="app-screen instructor-screen hidden" aria-label="Control remoto del instructor">
+    <header class="app-bar instructor-bar">
+      <div class="app-brand"><span>NRP</span><div><b>Instructor remoto</b><small>Control del monitor · V2.0</small></div></div>
+      <div class="app-actions">
+        <span id="instructorConnectionStatus" class="status-badge neutral">Desconectado</span>
+        <button id="backFromInstructor" class="icon-button" type="button" aria-label="Volver al inicio">×</button>
+      </div>
+    </header>
+
+    <main class="instructor-main">
+      <section id="connectCard" class="panel connect-panel">
+        <div>
+          <p class="eyebrow">CONEXIÓN SEGURA</p>
+          <h2>Conectar con el monitor</h2>
+          <p>En el dispositivo principal pulsa <b>Crear sesión remota</b>. Introduce aquí el código que aparece y el PIN del instructor.</p>
+        </div>
+        <div class="connect-grid">
+          <label>Código de sesión
+            <input id="roomInput" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10" placeholder="NRP-AB12CD">
+          </label>
+          <label>PIN del instructor
+            <input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="2026">
+          </label>
+          <button id="connectBtn" class="button primary large" type="button">Conectar al monitor</button>
+        </div>
+        <p id="connectHelp" class="help-text" aria-live="polite">El código debe tener el formato NRP-XXXXXX.</p>
+      </section>
+
+      <section id="instructorDashboard" class="dashboard hidden">
+        <section class="scenario-head panel">
+          <div>
+            <p class="eyebrow">ESCENARIO ACTIVO</p>
+            <h2 id="remoteScenarioTitle">Sin escenario generado</h2>
+            <p id="remoteScenarioMeta" class="muted">Genera un escenario en el monitor para comenzar.</p>
+          </div>
+          <div class="scenario-actions">
+            <button id="remoteGenerateBtn" class="button" type="button">Generar con datos actuales</button>
+            <button id="remoteRandomBtn" class="button" type="button">Generar aleatorio</button>
+            <button id="remoteOpenLiveBtn" class="button primary" type="button">Abrir simulación</button>
+          </div>
+        </section>
+
+        <section class="monitor-summary panel">
+          <div class="summary-top">
+            <div><p class="eyebrow">MONITOR EN TIEMPO REAL</p><h2 id="remotePhase">Esperando simulación</h2></div>
+            <div class="timer" id="remoteClock">0:00</div>
+          </div>
+          <div class="vital-grid">
+            <article class="vital-card heart"><span>Frecuencia cardiaca</span><strong id="remoteHr">—</strong><small>lpm</small></article>
+            <article class="vital-card oxygen"><span>SpO₂ preductal</span><strong id="remoteSpo2">—</strong><small>%</small></article>
+            <article class="vital-card state"><span>Estado</span><strong id="remoteStatePosition">0/0</strong><small id="remoteRunning">Detenido</small></article>
+          </div>
+          <div class="clinical-text"><b>Esfuerzo · tono · color</b><span id="remoteClinical">—</span></div>
+          <div class="clinical-text"><b>Acción esperada</b><span id="remoteAction">—</span></div>
+          <div class="clinical-text trigger"><b>Disparador</b><span id="remoteTrigger">—</span></div>
+        </section>
+
+        <section class="control-grid">
+          <article class="panel control-panel">
+            <div class="panel-title"><div><p class="eyebrow">EVOLUCIÓN</p><h3>Control del escenario</h3></div></div>
+            <div class="button-row four">
+              <button id="remotePrevBtn" class="button" type="button">◀ Estado</button>
+              <button id="remotePlayBtn" class="button primary" type="button">▶ Iniciar</button>
+              <button id="remoteNextBtn" class="button" type="button">Estado ▶</button>
+              <button id="remoteResetBtn" class="button" type="button">⟲ Reiniciar</button>
+            </div>
+            <label class="range-label">Estado del escenario
+              <input id="stateRange" type="range" min="0" max="0" value="0">
+            </label>
+            <label class="switch-row"><input id="autoAdvanceCheck" type="checkbox"> Avance automático según el reloj</label>
+          </article>
+
+          <article class="panel control-panel">
+            <div class="panel-title"><div><p class="eyebrow">SIGNOS VITALES</p><h3>Ajuste remoto</h3></div><button id="syncVitalsBtn" class="text-button" type="button">Sincronizar</button></div>
+            <div class="stepper-grid">
+              <div class="stepper-card">
+                <label for="hrInput">FC</label>
+                <div><button type="button" data-adjust="hr" data-delta="-5">−5</button><input id="hrInput" type="number" min="0" max="300" step="1"><button type="button" data-adjust="hr" data-delta="5">+5</button></div>
+              </div>
+              <div class="stepper-card">
+                <label for="spo2Input">SpO₂</label>
+                <div><button type="button" data-adjust="spo2" data-delta="-1">−1</button><input id="spo2Input" type="number" min="0" max="100" step="1"><button type="button" data-adjust="spo2" data-delta="1">+1</button></div>
+              </div>
+            </div>
+            <button id="applyVitalsBtn" class="button primary full" type="button">Aplicar FC y SpO₂</button>
+            <div class="preset-row">
+              <button type="button" data-vital-preset="40,60">FC 40 · SpO₂ 60</button>
+              <button type="button" data-vital-preset="80,70">FC 80 · SpO₂ 70</button>
+              <button type="button" data-vital-preset="120,85">FC 120 · SpO₂ 85</button>
+              <button type="button" data-vital-preset="150,92">FC 150 · SpO₂ 92</button>
+            </div>
+          </article>
+
+          <article class="panel control-panel">
+            <div class="panel-title"><div><p class="eyebrow">EVENTOS</p><h3>Información para el equipo</h3></div></div>
+            <div class="preset-row event-presets">
+              <button type="button" data-event="Apnea o boqueo. Reevalúen frecuencia cardiaca y respiración.">Apnea / boqueo</button>
+              <button type="button" data-event="La ventilación no produce movimiento torácico.">Sin movimiento torácico</button>
+              <button type="button" data-event="La frecuencia cardiaca no aumenta con la intervención actual.">FC no aumenta</button>
+              <button type="button" data-event="El recién nacido muestra mejoría clínica y aumento de la frecuencia cardiaca.">Mejoría clínica</button>
+            </div>
+            <label>Evento personalizado
+              <textarea id="customEvent" rows="3" placeholder="Mensaje que aparecerá sobre el monitor"></textarea>
+            </label>
+            <button id="sendEventBtn" class="button warning full" type="button">Mostrar evento en el monitor</button>
+          </article>
+
+          <article class="panel control-panel">
+            <div class="panel-title"><div><p class="eyebrow">HERRAMIENTAS NRP</p><h3>Segundo monitor y metrónomos</h3></div></div>
+            <label class="switch-row"><input id="secondMonitorCheck" type="checkbox"> Activar segundo monitor</label>
+            <label>Modo del segundo monitor
+              <select id="secondMonitorMode">
+                <option value="ductal">Diferencial pre/postductal</option>
+                <option value="aesp">AESP: actividad eléctrica sin pulso</option>
+                <option value="concord">Concordante, sin truco</option>
+              </select>
+            </label>
+            <label class="range-label">Diferencia postductal: <b id="deltaLabel">10%</b>
+              <input id="deltaRange" type="range" min="0" max="25" value="10">
+            </label>
+            <div class="button-row">
+              <button id="ventMetronomeBtn" class="button" type="button">🫁 VPP</button>
+              <button id="compMetronomeBtn" class="button" type="button">🫀 3:1</button>
+            </div>
+            <label class="range-label">Ventilaciones por minuto: <b id="ventRateLabel">40</b>
+              <input id="ventRateRange" type="range" min="30" max="60" value="40">
+            </label>
+          </article>
+        </section>
+
+        <section class="panel footer-controls">
+          <button id="remoteCloseLiveBtn" class="button danger" type="button">Cerrar simulación en el monitor</button>
+          <p>El generador, la evaluación y las constancias permanecen en el dispositivo principal. El control remoto modifica únicamente la simulación en vivo.</p>
+        </section>
+      </section>
+    </main>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="./remote-app.js?v=2.0" defer></script>
+</body>
+</html>
