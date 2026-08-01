@@ -1,0 +1,19 @@
+{
+  "name": "NRP Escenarios Remoto EDUVESA V2.0",
+  "short_name": "NRP Remoto",
+  "description": "Generador de escenarios NRP con simulación en vivo y control remoto para instructores.",
+  "start_url": "./remote.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3f6f6",
+  "theme_color": "#12385a",
+  "categories": ["education", "medical", "productivity"],
+  "icons": [
+    {"src": "./icon-remote.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ],
+  "shortcuts": [
+    {"name": "Monitor y generador", "short_name": "Monitor", "url": "./remote.html?role=monitor"},
+    {"name": "Instructor remoto", "short_name": "Instructor", "url": "./remote.html?role=instructor"}
+  ]
+}
