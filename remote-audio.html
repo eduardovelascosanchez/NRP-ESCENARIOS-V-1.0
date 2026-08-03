@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0d2740">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>NRP Escenarios Remoto V2.1 Audio · EDUVESA</title>
+  <link rel="manifest" href="./manifest-remote.webmanifest">
+  <link rel="icon" href="./icon-remote.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-remote.svg">
+  <link rel="stylesheet" href="./remote-audio.css?v=2.1">
+</head>
+<body>
+  <iframe
+    id="remoteShell"
+    title="NRP Escenarios Remoto EDUVESA"
+    src="./remote.html?role=monitor&v=2.1"
+    allow="autoplay; microphone; clipboard-write"
+  ></iframe>
+
+  <aside id="audioDock" class="audio-dock" aria-label="Sonido del monitor">
+    <div class="dock-head">
+      <div>
+        <small>NRP V2.1 AUDIO</small>
+        <strong>Sonido del monitor</strong>
+      </div>
+      <span id="pulseLamp" class="pulse-lamp" aria-hidden="true"></span>
+    </div>
+
+    <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="false">
+      🔊 Activar sonido
+    </button>
+
+    <label>
+      Tipo de tono
+      <select id="soundMode">
+        <option value="spo2" selected>Oximetría: tono según SpO₂</option>
+        <option value="ecg">ECG: tono fijo por latido</option>
+      </select>
+    </label>
+
+    <label>
+      Volumen: <b id="volumeLabel">45%</b>
+      <input id="volumeRange" type="range" min="5" max="100" value="45">
+    </label>
+
+    <div class="audio-readout">
+      <span>FC <b id="audioHr">—</b></span>
+      <span>SpO₂ <b id="audioSpo2">—</b></span>
+      <span id="audioStatus">Pulsa “Activar sonido”.</span>
+    </div>
+
+    <div class="dock-links">
+      <a href="./remote.html?role=instructor" target="_blank" rel="noopener">Abrir instructor</a>
+      <button id="minimizeDock" type="button">Minimizar</button>
+    </div>
+  </aside>
+
+  <button id="restoreDock" class="restore-dock hidden" type="button" aria-label="Mostrar controles de sonido">🔊</button>
+  <div id="audioToast" class="audio-toast" role="status" aria-live="polite"></div>
+
+  <script src="./remote-audio.js?v=2.1" defer></script>
+</body>
+</html>
