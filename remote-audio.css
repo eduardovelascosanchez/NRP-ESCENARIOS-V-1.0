@@ -1,0 +1,22 @@
+:root{
+  --navy:#0d2740;
+  --teal:#2f8a86;
+  --line:#d5e1e4;
+  --paper:#f4f7f7;
+  --ink:#17303d;
+  --muted:#60727c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--navy);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+#remoteShell{display:block;width:100%;height:100%;border:0;background:white}
+.audio-dock{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:1000;width:min(340px,calc(100vw - 28px));padding:14px;border:1px solid rgba(255,255,255,.28);border-radius:18px;background:rgba(13,39,64,.96);color:white;box-shadow:0 16px 42px rgba(0,0,0,.32);backdrop-filter:blur(14px)}
+.dock-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.dock-head small,.dock-head strong{display:block}.dock-head small{font-size:.66rem;letter-spacing:.12em;color:#a9d9d5}.dock-head strong{font-size:1rem;margin-top:2px}
+.pulse-lamp{width:16px;height:16px;border-radius:50%;background:#55717d;box-shadow:0 0 0 0 rgba(87,224,138,0)}.pulse-lamp.beat{background:#57e08a;box-shadow:0 0 0 9px rgba(87,224,138,.12);transform:scale(1.08)}
+.sound-toggle{width:100%;border:0;border-radius:12px;padding:11px 13px;background:var(--teal);color:white;font-weight:800}.sound-toggle.on{background:#dff5e9;color:#176241}.sound-toggle.error{background:#ffe5e1;color:#8c3028}
+.audio-dock label{display:block;margin-top:11px;font-size:.75rem;font-weight:750;color:#d7e8ec}.audio-dock select,.audio-dock input[type=range]{width:100%;margin-top:5px}.audio-dock select{border:1px solid #76909c;border-radius:10px;background:white;color:var(--ink);padding:9px}.audio-dock input[type=range]{accent-color:#63c9bf}
+.audio-readout{display:grid;grid-template-columns:auto auto;gap:7px 12px;margin-top:12px;padding:10px;border-radius:12px;background:rgba(255,255,255,.08);font-variant-numeric:tabular-nums}.audio-readout span{font-size:.8rem}.audio-readout span:last-child{grid-column:1/-1;color:#c6d8dd;line-height:1.35}.audio-readout b{color:white}
+.dock-links{display:flex;justify-content:space-between;gap:10px;margin-top:11px}.dock-links a,.dock-links button{border:0;background:transparent;color:#bce3df;font-size:.78rem;font-weight:750;text-decoration:none;padding:3px}.dock-links a:hover,.dock-links button:hover{text-decoration:underline}
+.restore-dock{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:1001;width:52px;height:52px;border:0;border-radius:50%;background:var(--navy);color:white;font-size:1.25rem;box-shadow:0 12px 28px rgba(0,0,0,.3)}
+.audio-toast{position:fixed;left:50%;bottom:22px;z-index:1100;max-width:min(560px,90vw);transform:translate(-50%,18px);opacity:0;pointer-events:none;padding:10px 15px;border-radius:11px;background:#111d24;color:white;box-shadow:0 10px 30px rgba(0,0,0,.28);transition:.2s}.audio-toast.show{opacity:1;transform:translate(-50%,0)}
+.hidden{display:none!important}
+@media(max-width:640px){.audio-dock{width:min(320px,calc(100vw - 20px));right:10px;bottom:10px;padding:12px}.dock-head{margin-bottom:8px}.audio-readout{padding:8px}}
