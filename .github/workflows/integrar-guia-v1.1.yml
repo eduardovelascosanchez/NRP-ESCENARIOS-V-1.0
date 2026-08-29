@@ -25,19 +25,30 @@ jobs:
           s = p.read_text(encoding='utf-8')
           css = '<link rel="stylesheet" href="guia.css">'
           js = '<script src="guia.js"></script>'
+
+          # CSS: el primer </head> sí corresponde al documento principal.
           if css not in s:
               s = s.replace('</head>', f'  {css}\n</head>', 1)
-          if js not in s:
-              s = s.replace('</body>', f'  {js}\n</body>', 1)
+
+          # Reparar cualquier inserción previa dentro de cadenas HTML del JS.
+          s = s.replace(f'  {js}\n', '')
+          s = s.replace(f'{js}\n', '')
+          s = s.replace(js, '')
+
+          # JS: insertar exclusivamente antes del ÚLTIMO </body>, que es el cierre real.
+          pos = s.rfind('</body>')
+          if pos < 0:
+              raise RuntimeError('No se encontró el cierre </body> de index.html')
+          s = s[:pos] + f'  {js}\n' + s[pos:]
           p.write_text(s, encoding='utf-8')
       - name: Guardar integración
         run: |
           if git diff --quiet -- index.html; then
-            echo "La ayuda ya está integrada."
+            echo "La ayuda ya está integrada correctamente."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "feat: activar instructivo y modo guiado V1.1 [skip ci]"
+          git commit -m "fix: activar guía V1.1 en el documento principal [skip ci]"
           git push
