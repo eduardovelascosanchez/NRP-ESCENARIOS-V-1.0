@@ -1731,8 +1731,7 @@ function constanciaNuevaPestana(){
   const estilos=[...document.querySelectorAll("style")].map(s=>s.outerHTML).join("");
   const html='<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Constancia EDUVESA</title>'+estilos+
     '</head><body style="background:#fff;margin:0;padding:22px;display:flex;justify-content:center">'+doc.outerHTML+
-    '<script>window.onload=function(){setTimeout(function(){try{window.print();}catch(e){}},400);};<\/script>  <script src="guia.js"></script>
-</body></html>';
+    '<script>window.onload=function(){setTimeout(function(){try{window.print();}catch(e){}},400);};<\/script></body></html>';
   let w=null;
   try{ w=window.open("","_blank"); }catch(e){ w=null; }
   if(w && w.document){ w.document.open(); w.document.write(html); w.document.close(); return; }
@@ -2179,5 +2178,6 @@ initGA();
 poblarProblemas();
 initRiesgos();
 </script>
+  <script src="guia.js"></script>
 </body>
 </html>
