@@ -14,3 +14,4 @@
 .guide-objective-card{margin:12px 0;padding:13px 14px;border:1px dashed #9fb2cc;border-radius:12px;background:#f8fbff;font-size:13px;line-height:1.5}.guide-objective-card strong{color:#36568b}
 @media(max-width:640px){.guide-modal-backdrop{padding:0}.guide-modal{width:100vw;max-height:100vh;height:100vh;border-radius:0}.guide-modal-body{padding:18px}.guide-float-help{right:12px;bottom:12px}.guide-toolbar button{flex:1}.guide-tip{bottom:12px!important;left:12px!important;right:12px!important;top:auto!important;width:auto}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.guide-progress>span{transition:none}}
+/* integración V1.1 validada */
