@@ -1,4 +1,4 @@
-name: Integrar NRP Escenarios V1.2
+name: Integrar NRP Escenarios V1.3
 
 on:
   push:
@@ -9,6 +9,8 @@ on:
       - 'guia.css'
       - 'instructor.js'
       - 'instructor.css'
+      - 'evaluacion.js'
+      - 'evaluacion.css'
   workflow_dispatch:
 
 permissions:
@@ -19,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Integrar ayuda y Modo Instructor V1.2 en index.html
+      - name: Integrar ayuda, Modo Instructor y Evaluación V1.3 en index.html
         shell: python
         run: |
           from pathlib import Path
@@ -28,13 +30,14 @@ jobs:
           css_items = [
               '<link rel="stylesheet" href="guia.css">',
               '<link rel="stylesheet" href="instructor.css">',
+              '<link rel="stylesheet" href="evaluacion.css">',
           ]
           js_items = [
               '<script src="guia.js"></script>',
               '<script src="instructor.js"></script>',
+              '<script src="evaluacion.js"></script>',
           ]
 
-          # El primer </head> es el cierre del documento principal.
           head_pos = s.find('</head>')
           if head_pos < 0:
               raise RuntimeError('No se encontró </head> en index.html')
@@ -44,25 +47,23 @@ jobs:
           css_block = ''.join(f'  {css}\n' for css in css_items)
           s = s[:head_pos] + css_block + s[head_pos:]
 
-          # Limpiar scripts previos, incluso si una versión anterior quedó dentro de una cadena JS.
           for js in js_items:
               s = s.replace(f'  {js}\n', '').replace(f'{js}\n', '').replace(js, '')
 
-          # Insertar scripts exclusivamente antes del ÚLTIMO </body> del documento real.
           body_pos = s.rfind('</body>')
           if body_pos < 0:
               raise RuntimeError('No se encontró el cierre </body> de index.html')
           js_block = ''.join(f'  {js}\n' for js in js_items)
           s = s[:body_pos] + js_block + s[body_pos:]
           p.write_text(s, encoding='utf-8')
-      - name: Guardar integración V1.2
+      - name: Guardar integración V1.3
         run: |
           if git diff --quiet -- index.html; then
-            echo "NRP Escenarios V1.2 ya está integrado correctamente."
+            echo "NRP Escenarios V1.3 ya está integrado correctamente."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "feat: activar Modo Instructor V1.2 [skip ci]"
+          git commit -m "feat: activar Modo Evaluación V1.3 [skip ci]"
           git push
